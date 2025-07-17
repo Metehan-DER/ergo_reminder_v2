@@ -1,0 +1,17 @@
+flutter_launcher_icons:
+  image_path: "assets/icons/logo.png"  # Recommended to use a dedicated icons folder
+  
+  android: false
+  min_sdk_android: 21
+  
+  ios: false
+  remove_alpha_ios: true
+  
+  windows:
+    generate: true
+    image_path: "assets/icons/logo.png"
+    icon_size: 256  # Recommended size for Windows
+  
+  macos:
+    generate: true
+    image_path: "assets/icons/logo.png"
