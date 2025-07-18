@@ -2,7 +2,7 @@ import 'package:ergo_reminder_v2/credits.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_local_notifications/flutter_local_notifications.dart';
 import 'package:shared_preferences/shared_preferences.dart';
-import 'package:system_tray/system_tray.dart';
+import 'package:tray_manager/tray_manager.dart';
 import 'package:window_manager/window_manager.dart';
 import 'package:launch_at_startup/launch_at_startup.dart';
 import 'dart:async';
@@ -18,14 +18,12 @@ class HomePage extends StatefulWidget {
   State<HomePage> createState() => _HomePageState();
 }
 
-class _HomePageState extends State<HomePage> with WindowListener {
-  final SystemTray _systemTray = SystemTray();
-  final AppWindow _appWindow = AppWindow();
+class _HomePageState extends State<HomePage> with WindowListener, TrayListener {
   Timer? _mainTimer;
   int _workMinutes = 0;
   late SharedPreferences _prefs;
   final FlutterLocalNotificationsPlugin _notifications =
-      FlutterLocalNotificationsPlugin();
+  FlutterLocalNotificationsPlugin();
 
   // Ayarlar
   Map<String, bool> _enabledReminders = {
@@ -47,6 +45,7 @@ class _HomePageState extends State<HomePage> with WindowListener {
   void initState() {
     super.initState();
     windowManager.addListener(this);
+    trayManager.addListener(this);
     _initApp();
   }
 
@@ -63,136 +62,103 @@ class _HomePageState extends State<HomePage> with WindowListener {
     await windowManager.setPreventClose(true);
     await windowManager.setSkipTaskbar(false);
     await windowManager.setTitle('Ergonomik Asistan');
-
-    // Minimum boyut ayarla
     await windowManager.setMinimumSize(const Size(500, 850));
-
-    // macOS için ek ayar kaldırıldı - closable false yapınca
-    // macOS'ta sistem tepsisi düzgün çalışmıyor
   }
 
   Future<void> _initSystemTray() async {
-    // Platform'a göre icon path ayarla
-    String path;
-    if (Platform.isWindows) {
-      path = 'assets/logo.ico'; // Windows için .ico formatı önerilir
-    } else if (Platform.isMacOS) {
-      path = 'assets/logo.png'; // macOS için .png
-    } else {
-      path = 'assets/logo.png';
-    }
-
-    // Sistem tepsisi başlat
-    await _systemTray.initSystemTray(
-      title: "Ergonomik Asistan",
-      iconPath: path,
-      toolTip: "Ergonomik Asistan - ${_isRunning ? 'Çalışıyor' : 'Durduruldu'}",
-    );
-
-    // Menü oluştur
-    final Menu menu = Menu();
-    await menu.buildFrom([
-      MenuItemLabel(
-        label: _isRunning ? 'Durdur' : 'Başlat',
-        onClicked: (menuItem) {
-          setState(() {
-            _isRunning = !_isRunning;
-          });
-          _updateSystemTrayTooltip();
-          // Menüyü yeniden oluştur
-          _rebuildSystemTrayMenu();
-        },
-      ),
-      MenuSeparator(),
-      MenuItemLabel(
-        label: 'Pencereyi Göster',
-        onClicked: (menuItem) async {
-          await windowManager.show();
-          await windowManager.focus();
-        },
-      ),
-      MenuItemLabel(
-        label: 'Pencereyi Gizle',
-        onClicked: (menuItem) async {
-          await windowManager.hide();
-        },
-      ),
-      MenuSeparator(),
-      MenuItemLabel(
-        label: 'Ayarlar',
-        onClicked: (menuItem) async {
-          await windowManager.show();
-          await windowManager.focus();
-          _openSettings();
-        },
-      ),
-      MenuSeparator(),
-      MenuItemLabel(
-        label: 'Uygulamayı Kapat',
-        onClicked: (menuItem) {
-          _confirmExit();
-        },
-      ),
-    ]);
-
-    await _systemTray.setContextMenu(menu);
-
-    // Sistem tepsisi click olayları
-    _systemTray.registerSystemTrayEventHandler((eventName) {
-      if (eventName == kSystemTrayEventClick) {
-        Platform.isWindows ? _toggleWindow() : _systemTray.popUpContextMenu();
-      } else if (eventName == kSystemTrayEventRightClick) {
-        Platform.isWindows ? _systemTray.popUpContextMenu() : _toggleWindow();
+    try {
+      // Tray icon ayarla
+      if (Platform.isWindows) {
+        await trayManager.setIcon('assets/icons/logo.ico');
+      } else if (Platform.isMacOS) {
+        await trayManager.setIcon('assets/logo.png', isTemplate: true);
+      } else {
+        await trayManager.setIcon('assets/logo.png');
       }
-    });
+
+      // Tooltip ayarla
+      await trayManager.setToolTip(
+        'Ergonomik Asistan - ${_isRunning ? 'Çalışıyor' : 'Durduruldu'}',
+      );
+
+      // Menüyü oluştur
+      await _updateTrayMenu();
+
+      debugPrint('Tray manager initialized successfully');
+    } catch (e) {
+      debugPrint('Tray manager initialization error: $e');
+      // Icon hatasında icon olmadan devam et
+      try {
+        await trayManager.setToolTip('Ergonomik Asistan');
+        await _updateTrayMenu();
+      } catch (e2) {
+        debugPrint('Tray manager fallback also failed: $e2');
+      }
+    }
   }
 
-  Future<void> _rebuildSystemTrayMenu() async {
-    final Menu menu = Menu();
-    await menu.buildFrom([
-      MenuItemLabel(
-        label: _isRunning ? 'Durdur' : 'Başlat',
-        onClicked: (menuItem) {
-          setState(() {
-            _isRunning = !_isRunning;
-          });
-          _updateSystemTrayTooltip();
-          _rebuildSystemTrayMenu();
-        },
-      ),
-      MenuSeparator(),
-      MenuItemLabel(
-        label: 'Pencereyi Göster',
-        onClicked: (menuItem) async {
-          await windowManager.show();
-          await windowManager.focus();
-        },
-      ),
-      MenuItemLabel(
-        label: 'Pencereyi Gizle',
-        onClicked: (menuItem) async {
-          await windowManager.hide();
-        },
-      ),
-      MenuSeparator(),
-      MenuItemLabel(
-        label: 'Ayarlar',
-        onClicked: (menuItem) async {
-          await windowManager.show();
-          await windowManager.focus();
-          _openSettings();
-        },
-      ),
-      MenuSeparator(),
-      MenuItemLabel(
-        label: 'Uygulamayı Kapat',
-        onClicked: (menuItem) {
-          _confirmExit();
-        },
-      ),
-    ]);
+  Future<void> _updateTrayMenu() async {
+    List<MenuItem> items = [
+      MenuItem(key: 'toggle_running', label: _isRunning ? 'Durdur' : 'Başlat'),
+      MenuItem.separator(),
+      MenuItem(key: 'show_window', label: 'Pencereyi Göster'),
+      MenuItem(key: 'hide_window', label: 'Pencereyi Gizle'),
+      MenuItem.separator(),
+      MenuItem(key: 'settings', label: 'Ayarlar'),
+      MenuItem.separator(),
+      MenuItem(key: 'quit', label: 'Uygulamayı Kapat'),
+    ];
 
-    await _systemTray.setContextMenu(menu);
+    await trayManager.setContextMenu(Menu(items: items));
+  }
+
+  // Tray Listener metodları
+  @override
+  void onTrayIconMouseDown() {
+    // Sol tıklama
+    if (Platform.isWindows) {
+      _toggleWindow();
+    } else {
+      trayManager.popUpContextMenu();
+    }
+  }
+
+  @override
+  void onTrayIconRightMouseDown() {
+    // Sağ tıklama
+    if (Platform.isWindows) {
+      trayManager.popUpContextMenu();
+    } else {
+      _toggleWindow();
+    }
+  }
+
+  @override
+  void onTrayMenuItemClick(MenuItem menuItem) {
+    switch (menuItem.key) {
+      case 'toggle_running':
+        setState(() {
+          _isRunning = !_isRunning;
+        });
+        _updateSystemTrayTooltip();
+        _updateTrayMenu();
+        break;
+      case 'show_window':
+        windowManager.show();
+        windowManager.focus();
+        break;
+      case 'hide_window':
+        windowManager.hide();
+        break;
+      case 'settings':
+        windowManager.show();
+        windowManager.focus();
+        _openSettings();
+        break;
+      case 'quit':
+        _confirmExit();
+        break;
+    }
   }
 
   Future<void> _toggleWindow() async {
@@ -206,7 +172,7 @@ class _HomePageState extends State<HomePage> with WindowListener {
   }
 
   Future<void> _updateSystemTrayTooltip() async {
-    await _systemTray.setToolTip(
+    await trayManager.setToolTip(
       "Ergonomik Asistan - ${_isRunning ? 'Çalışıyor' : 'Durduruldu'}",
     );
   }
@@ -236,7 +202,7 @@ class _HomePageState extends State<HomePage> with WindowListener {
     );
 
     if (shouldExit == true) {
-      await _systemTray.destroy();
+      await trayManager.destroy();
       await windowManager.destroy();
       exit(0);
     }
@@ -290,7 +256,7 @@ class _HomePageState extends State<HomePage> with WindowListener {
       _silentStart = TimeOfDay(hour: startHour, minute: startMinute);
       _silentEnd = TimeOfDay(hour: endHour, minute: endMinute);
 
-      // Otomatik başlatma - Hata kontrolü ile
+      // Otomatik başlatma
       _autoStart = _prefs.getBool('auto_start') ?? false;
       if (_autoStart) {
         try {
@@ -421,7 +387,7 @@ class _HomePageState extends State<HomePage> with WindowListener {
     await _prefs.setInt('silent_end_hour', _silentEnd.hour);
     await _prefs.setInt('silent_end_minute', _silentEnd.minute);
 
-    // Otomatik başlatma - Hata kontrolü ile
+    // Otomatik başlatma
     await _prefs.setBool('auto_start', _autoStart);
     if (_autoStart) {
       try {
@@ -470,7 +436,7 @@ class _HomePageState extends State<HomePage> with WindowListener {
     await windowManager.hide();
 
     // Sistem tepsisi tooltip'ini güncelle
-    _updateSystemTrayTooltip();
+    await _updateSystemTrayTooltip();
   }
 
   @override
@@ -483,7 +449,8 @@ class _HomePageState extends State<HomePage> with WindowListener {
   void dispose() {
     _mainTimer?.cancel();
     windowManager.removeListener(this);
-    _systemTray.destroy();
+    trayManager.removeListener(this);
+    trayManager.destroy();
     super.dispose();
   }
 
@@ -547,11 +514,11 @@ class _HomePageState extends State<HomePage> with WindowListener {
                           _isRunning ? 'Takip Aktif' : 'Takip Durduruldu',
                           style: Theme.of(context).textTheme.headlineSmall
                               ?.copyWith(
-                                color: _isRunning
-                                    ? Colors.deepPurple
-                                    : Colors.grey,
-                                fontWeight: FontWeight.bold,
-                              ),
+                            color: _isRunning
+                                ? Colors.deepPurple
+                                : Colors.grey,
+                            fontWeight: FontWeight.bold,
+                          ),
                         ),
                         const SizedBox(height: 10),
                         Text(
@@ -576,6 +543,7 @@ class _HomePageState extends State<HomePage> with WindowListener {
                         _isRunning = !_isRunning;
                       });
                       _updateSystemTrayTooltip();
+                      _updateTrayMenu();
                     },
                     icon: Icon(
                       _isRunning ? Icons.pause : Icons.play_arrow,
@@ -688,11 +656,11 @@ class _HomePageState extends State<HomePage> with WindowListener {
   }
 
   Widget _buildStatusCard(
-    String title,
-    String value,
-    IconData icon,
-    Color color,
-  ) {
+      String title,
+      String value,
+      IconData icon,
+      Color color,
+      ) {
     return Card(
       elevation: 3,
       child: Container(
@@ -730,7 +698,7 @@ class _HomePageState extends State<HomePage> with WindowListener {
       if (entry.value) {
         int timeLeft =
             _reminderIntervals[entry.key]! -
-            (_workMinutes % _reminderIntervals[entry.key]!);
+                (_workMinutes % _reminderIntervals[entry.key]!);
         if (timeLeft < minTime) {
           minTime = timeLeft;
         }
