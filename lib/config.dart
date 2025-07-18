@@ -2,7 +2,7 @@
 
 class AppConfig {
   // Test mode'u kapatmak için false yapın
-  static const bool isTestMode = true;
+  static const bool isTestMode = false;
 
   // Timer aralığı
   static Duration get timerInterval =>
