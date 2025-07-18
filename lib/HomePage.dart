@@ -25,7 +25,7 @@ class _HomePageState extends State<HomePage> with WindowListener {
   int _workMinutes = 0;
   late SharedPreferences _prefs;
   final FlutterLocalNotificationsPlugin _notifications =
-  FlutterLocalNotificationsPlugin();
+      FlutterLocalNotificationsPlugin();
 
   // Ayarlar
   Map<String, bool> _enabledReminders = {
@@ -64,21 +64,32 @@ class _HomePageState extends State<HomePage> with WindowListener {
     await windowManager.setSkipTaskbar(false);
     await windowManager.setTitle('Ergonomik Asistan');
 
-    // macOS için ek ayar
-    if (Platform.isMacOS) {
-      await windowManager.setClosable(false);
-    }
+    // Minimum boyut ayarla
+    await windowManager.setMinimumSize(const Size(500, 850));
+
+    // macOS için ek ayar kaldırıldı - closable false yapınca
+    // macOS'ta sistem tepsisi düzgün çalışmıyor
   }
 
   Future<void> _initSystemTray() async {
-    String path = Platform.isWindows ? 'assets/logo.png' : 'assets/logo.png';
+    // Platform'a göre icon path ayarla
+    String path;
+    if (Platform.isWindows) {
+      path = 'assets/logo.ico'; // Windows için .ico formatı önerilir
+    } else if (Platform.isMacOS) {
+      path = 'assets/logo.png'; // macOS için .png
+    } else {
+      path = 'assets/logo.png';
+    }
 
+    // Sistem tepsisi başlat
     await _systemTray.initSystemTray(
       title: "Ergonomik Asistan",
       iconPath: path,
       toolTip: "Ergonomik Asistan - ${_isRunning ? 'Çalışıyor' : 'Durduruldu'}",
     );
 
+    // Menü oluştur
     final Menu menu = Menu();
     await menu.buildFrom([
       MenuItemLabel(
@@ -88,6 +99,8 @@ class _HomePageState extends State<HomePage> with WindowListener {
             _isRunning = !_isRunning;
           });
           _updateSystemTrayTooltip();
+          // Menüyü yeniden oluştur
+          _rebuildSystemTrayMenu();
         },
       ),
       MenuSeparator(),
@@ -124,17 +137,62 @@ class _HomePageState extends State<HomePage> with WindowListener {
 
     await _systemTray.setContextMenu(menu);
 
+    // Sistem tepsisi click olayları
     _systemTray.registerSystemTrayEventHandler((eventName) {
       if (eventName == kSystemTrayEventClick) {
-        Platform.isWindows
-            ? _toggleWindow()
-            : _systemTray.popUpContextMenu();
+        Platform.isWindows ? _toggleWindow() : _systemTray.popUpContextMenu();
       } else if (eventName == kSystemTrayEventRightClick) {
-        Platform.isWindows
-            ? _systemTray.popUpContextMenu()
-            : _toggleWindow();
+        Platform.isWindows ? _systemTray.popUpContextMenu() : _toggleWindow();
       }
     });
+  }
+
+  Future<void> _rebuildSystemTrayMenu() async {
+    final Menu menu = Menu();
+    await menu.buildFrom([
+      MenuItemLabel(
+        label: _isRunning ? 'Durdur' : 'Başlat',
+        onClicked: (menuItem) {
+          setState(() {
+            _isRunning = !_isRunning;
+          });
+          _updateSystemTrayTooltip();
+          _rebuildSystemTrayMenu();
+        },
+      ),
+      MenuSeparator(),
+      MenuItemLabel(
+        label: 'Pencereyi Göster',
+        onClicked: (menuItem) async {
+          await windowManager.show();
+          await windowManager.focus();
+        },
+      ),
+      MenuItemLabel(
+        label: 'Pencereyi Gizle',
+        onClicked: (menuItem) async {
+          await windowManager.hide();
+        },
+      ),
+      MenuSeparator(),
+      MenuItemLabel(
+        label: 'Ayarlar',
+        onClicked: (menuItem) async {
+          await windowManager.show();
+          await windowManager.focus();
+          _openSettings();
+        },
+      ),
+      MenuSeparator(),
+      MenuItemLabel(
+        label: 'Uygulamayı Kapat',
+        onClicked: (menuItem) {
+          _confirmExit();
+        },
+      ),
+    ]);
+
+    await _systemTray.setContextMenu(menu);
   }
 
   Future<void> _toggleWindow() async {
@@ -149,7 +207,7 @@ class _HomePageState extends State<HomePage> with WindowListener {
 
   Future<void> _updateSystemTrayTooltip() async {
     await _systemTray.setToolTip(
-        "Ergonomik Asistan - ${_isRunning ? 'Çalışıyor' : 'Durduruldu'}"
+      "Ergonomik Asistan - ${_isRunning ? 'Çalışıyor' : 'Durduruldu'}",
     );
   }
 
@@ -161,7 +219,9 @@ class _HomePageState extends State<HomePage> with WindowListener {
       context: context,
       builder: (context) => AlertDialog(
         title: const Text('Uygulamayı Kapat'),
-        content: const Text('Ergonomik Asistan\'ı tamamen kapatmak istiyor musunuz?'),
+        content: const Text(
+          'Ergonomik Asistan\'ı tamamen kapatmak istiyor musunuz?',
+        ),
         actions: [
           TextButton(
             onPressed: () => Navigator.of(context).pop(false),
@@ -409,15 +469,8 @@ class _HomePageState extends State<HomePage> with WindowListener {
     // Pencereyi kapatma yerine gizle
     await windowManager.hide();
 
-    // Sadece debug modunda bilgi ver
-    if (mounted) {
-      ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(
-          content: Text('Uygulama sistem tepsisinde çalışmaya devam ediyor'),
-          duration: Duration(seconds: 2),
-        ),
-      );
-    }
+    // Sistem tepsisi tooltip'ini güncelle
+    _updateSystemTrayTooltip();
   }
 
   @override
@@ -494,11 +547,11 @@ class _HomePageState extends State<HomePage> with WindowListener {
                           _isRunning ? 'Takip Aktif' : 'Takip Durduruldu',
                           style: Theme.of(context).textTheme.headlineSmall
                               ?.copyWith(
-                            color: _isRunning
-                                ? Colors.deepPurple
-                                : Colors.grey,
-                            fontWeight: FontWeight.bold,
-                          ),
+                                color: _isRunning
+                                    ? Colors.deepPurple
+                                    : Colors.grey,
+                                fontWeight: FontWeight.bold,
+                              ),
                         ),
                         const SizedBox(height: 10),
                         Text(
@@ -626,8 +679,6 @@ class _HomePageState extends State<HomePage> with WindowListener {
                       ],
                     ),
                   ),
-
-
               ],
             ),
           ),
@@ -637,11 +688,11 @@ class _HomePageState extends State<HomePage> with WindowListener {
   }
 
   Widget _buildStatusCard(
-      String title,
-      String value,
-      IconData icon,
-      Color color,
-      ) {
+    String title,
+    String value,
+    IconData icon,
+    Color color,
+  ) {
     return Card(
       elevation: 3,
       child: Container(
@@ -679,7 +730,7 @@ class _HomePageState extends State<HomePage> with WindowListener {
       if (entry.value) {
         int timeLeft =
             _reminderIntervals[entry.key]! -
-                (_workMinutes % _reminderIntervals[entry.key]!);
+            (_workMinutes % _reminderIntervals[entry.key]!);
         if (timeLeft < minTime) {
           minTime = timeLeft;
         }
