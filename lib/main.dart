@@ -14,14 +14,16 @@ void main() async {
   const initialSize = Size(500, 850);
   const minimumSize = Size(500, 850);
 
-  WindowOptions windowOptions = const WindowOptions(
+  WindowOptions windowOptions = WindowOptions(
     size: initialSize,
     minimumSize: minimumSize,
     center: true,
     backgroundColor: Colors.transparent,
     skipTaskbar: false,
-    titleBarStyle: TitleBarStyle.normal,
+    titleBarStyle: Platform.isMacOS ? TitleBarStyle.normal : TitleBarStyle.normal,
     title: 'Ergonomik Asistan',
+    // macOS için window kapatıldığında uygulamayı kapatmasını engelle
+    windowButtonVisibility: Platform.isMacOS ? true : null,
   );
 
   // Launch at startup setup
@@ -29,10 +31,12 @@ void main() async {
     launchAtStartup.setup(
       appName: 'ErgonomikAsistan',
       appPath: Platform.resolvedExecutable,
+      // macOS için paket identifier'ı ekle
+      packageName: Platform.isMacOS ? 'com.example.ergonomikasistan' : null,
     );
   }
 
-  // Pencereyi göster ve ayarla
+  // Pencereyi göster
   await windowManager.waitUntilReadyToShow(windowOptions, () async {
     await windowManager.show();
     await windowManager.focus();

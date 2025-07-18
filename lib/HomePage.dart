@@ -23,7 +23,7 @@ class _HomePageState extends State<HomePage> with WindowListener, TrayListener {
   int _workMinutes = 0;
   late SharedPreferences _prefs;
   final FlutterLocalNotificationsPlugin _notifications =
-  FlutterLocalNotificationsPlugin();
+      FlutterLocalNotificationsPlugin();
 
   // Ayarlar
   Map<String, bool> _enabledReminders = {
@@ -67,13 +67,29 @@ class _HomePageState extends State<HomePage> with WindowListener, TrayListener {
 
   Future<void> _initSystemTray() async {
     try {
-      // Tray icon ayarla
+      // Windows için farklı yöntemler dene
       if (Platform.isWindows) {
-        await trayManager.setIcon('assets/icons/logo.ico');
+        // Yöntem 1: Base64 encoded icon kullan
+        const String base64Icon =
+            'iVBORw0KGgoAAAANSUhEUgAAABAAAAAQCAYAAAAf8/9hAAAABHNCSVQICAgIfAhkiAAAAAlwSFlzAAAAdgAAAHYBTnsmCAAAABl0RVh0U29mdHdhcmUAd3d3Lmlua3NjYXBlLm9yZ5vuPBoAAAHJSURBVDiNpZO9S1VRHMc/5977rnpfKr28BhEV9TJolNCQUEJTRBANDf0FDQ0REQVBQ0tLQyA0REOL4NRQgkNDEA1BEL3Ji0qzUrI33nfveafhlKnde+8zfOHAOZzz+37O73fO+QmqRNd1z3Vd10s/hRAKUBJCdNTyvRJd133A/hpBvoqu64sVQggpSilBCHEGeK/sKYBuYLYQok8I8d013U8p5W4AGWMopbTHdV3PKMsylFKaUsr0d9d1PbOa7pOUMgIglVLGNU3rklIuVxs8CCAVRdkK7AA6gRjwSgjxCPgghLgLIByg3W639wP7gG1Ap1LKRqBJKWW7UspJ27YnWZaZQoi5AFJKaVtLSwvhcHjNm2VZ5HI5hBBV0yuglPLF1atX8fv9hMNhhBBEo1GklHi9XhobGykWizx+/Jh0Ol2LB4AQQtxwHIfh4WE0TWNhYYFSqYSUknw+j+M4CCHo7+8nFArVJK8ATqeT5wYGBmhoaKBcLmOaJoZhMD8/j67rRCIRBgcHa1n7BYVC4RSAEIJQKIRpmjiOw8zMDLFYjEQigaZp1dpaBXVN5z+gq9pCjRt4x3EcTNOsS7fqBP8avgP4Hny1L+sHPgAAAABJRU5ErkJggg==';
+
+        try {
+          await trayManager.setIcon(base64Icon);
+          debugPrint('Windows: Base64 icon set successfully');
+        } catch (e) {
+          debugPrint('Windows: Base64 icon failed: $e');
+          // Icon olmadan devam et
+        }
       } else if (Platform.isMacOS) {
-        await trayManager.setIcon('assets/logo.png', isTemplate: true);
-      } else {
-        await trayManager.setIcon('assets/logo.png');
+        // macOS için sistem ikonu kullan
+        try {
+          // Önce template icon dene
+          await trayManager.setIcon('assets/logo.png', isTemplate: true);
+          debugPrint('macOS: Template icon set successfully');
+        } catch (e) {
+          debugPrint('macOS: Icon failed: $e');
+          // Icon olmadan devam et
+        }
       }
 
       // Tooltip ayarla
@@ -87,13 +103,6 @@ class _HomePageState extends State<HomePage> with WindowListener, TrayListener {
       debugPrint('Tray manager initialized successfully');
     } catch (e) {
       debugPrint('Tray manager initialization error: $e');
-      // Icon hatasında icon olmadan devam et
-      try {
-        await trayManager.setToolTip('Ergonomik Asistan');
-        await _updateTrayMenu();
-      } catch (e2) {
-        debugPrint('Tray manager fallback also failed: $e2');
-      }
     }
   }
 
@@ -144,13 +153,22 @@ class _HomePageState extends State<HomePage> with WindowListener, TrayListener {
         _updateTrayMenu();
         break;
       case 'show_window':
+        if (Platform.isMacOS) {
+          windowManager.setSkipTaskbar(false);
+        }
         windowManager.show();
         windowManager.focus();
         break;
       case 'hide_window':
         windowManager.hide();
+        if (Platform.isMacOS) {
+          windowManager.setSkipTaskbar(true);
+        }
         break;
       case 'settings':
+        if (Platform.isMacOS) {
+          windowManager.setSkipTaskbar(false);
+        }
         windowManager.show();
         windowManager.focus();
         _openSettings();
@@ -165,7 +183,13 @@ class _HomePageState extends State<HomePage> with WindowListener, TrayListener {
     bool isVisible = await windowManager.isVisible();
     if (isVisible) {
       await windowManager.hide();
+      if (Platform.isMacOS) {
+        await windowManager.setSkipTaskbar(true);
+      }
     } else {
+      if (Platform.isMacOS) {
+        await windowManager.setSkipTaskbar(false);
+      }
       await windowManager.show();
       await windowManager.focus();
     }
@@ -429,14 +453,30 @@ class _HomePageState extends State<HomePage> with WindowListener, TrayListener {
     );
   }
 
-  // Pencere kapatma olayını yönetir
   @override
   Future<void> onWindowClose() async {
-    // Pencereyi kapatma yerine gizle
+    debugPrint('onWindowClose called');
+
+    // Pencereyi gizle
     await windowManager.hide();
+
+    // macOS'ta uygulama kapanmaması için dock'tan gizle
+    if (Platform.isMacOS) {
+      await windowManager.setSkipTaskbar(true);
+    }
 
     // Sistem tepsisi tooltip'ini güncelle
     await _updateSystemTrayTooltip();
+  }
+
+  @override
+  void onWindowEvent(String eventName) {
+    debugPrint('Window event: $eventName');
+
+    // macOS'ta minimize edildiğinde de gizle
+    if (Platform.isMacOS && eventName == 'minimize') {
+      windowManager.hide();
+    }
   }
 
   @override
@@ -514,11 +554,11 @@ class _HomePageState extends State<HomePage> with WindowListener, TrayListener {
                           _isRunning ? 'Takip Aktif' : 'Takip Durduruldu',
                           style: Theme.of(context).textTheme.headlineSmall
                               ?.copyWith(
-                            color: _isRunning
-                                ? Colors.deepPurple
-                                : Colors.grey,
-                            fontWeight: FontWeight.bold,
-                          ),
+                                color: _isRunning
+                                    ? Colors.deepPurple
+                                    : Colors.grey,
+                                fontWeight: FontWeight.bold,
+                              ),
                         ),
                         const SizedBox(height: 10),
                         Text(
@@ -656,11 +696,11 @@ class _HomePageState extends State<HomePage> with WindowListener, TrayListener {
   }
 
   Widget _buildStatusCard(
-      String title,
-      String value,
-      IconData icon,
-      Color color,
-      ) {
+    String title,
+    String value,
+    IconData icon,
+    Color color,
+  ) {
     return Card(
       elevation: 3,
       child: Container(
@@ -698,7 +738,7 @@ class _HomePageState extends State<HomePage> with WindowListener, TrayListener {
       if (entry.value) {
         int timeLeft =
             _reminderIntervals[entry.key]! -
-                (_workMinutes % _reminderIntervals[entry.key]!);
+            (_workMinutes % _reminderIntervals[entry.key]!);
         if (timeLeft < minTime) {
           minTime = timeLeft;
         }

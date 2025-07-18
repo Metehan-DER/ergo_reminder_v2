@@ -104,3 +104,8 @@ flutter:
   #
   # For details regarding fonts from package dependencies,
   # see https://flutter.dev/to/font-from-package
+
+flutter_icons:
+  windows:
+    generate: true
+    image_path: "assets/logo.png"
