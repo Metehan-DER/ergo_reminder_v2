@@ -25,7 +25,7 @@ class _HomePageState extends State<HomePage> with WindowListener {
   int _workMinutes = 0;
   late SharedPreferences _prefs;
   final FlutterLocalNotificationsPlugin _notifications =
-      FlutterLocalNotificationsPlugin();
+  FlutterLocalNotificationsPlugin();
 
   // Ayarlar
   Map<String, bool> _enabledReminders = {
@@ -51,10 +51,23 @@ class _HomePageState extends State<HomePage> with WindowListener {
   }
 
   Future<void> _initApp() async {
+    await _initWindow();
     await _initSystemTray();
     await _initNotifications();
     await _loadSettings();
     _startTracking();
+  }
+
+  Future<void> _initWindow() async {
+    // Pencere ayarları
+    await windowManager.setPreventClose(true);
+    await windowManager.setSkipTaskbar(false);
+    await windowManager.setTitle('Ergonomik Asistan');
+
+    // macOS için ek ayar
+    if (Platform.isMacOS) {
+      await windowManager.setClosable(false);
+    }
   }
 
   Future<void> _initSystemTray() async {
@@ -63,25 +76,48 @@ class _HomePageState extends State<HomePage> with WindowListener {
     await _systemTray.initSystemTray(
       title: "Ergonomik Asistan",
       iconPath: path,
-      toolTip: "Ergonomik Asistan",
+      toolTip: "Ergonomik Asistan - ${_isRunning ? 'Çalışıyor' : 'Durduruldu'}",
     );
 
     final Menu menu = Menu();
     await menu.buildFrom([
       MenuItemLabel(
-        label: 'Göster',
-        onClicked: (menuItem) => windowManager.show(),
-      ),
-      MenuItemLabel(
-        label: 'Gizle',
-        onClicked: (menuItem) => windowManager.hide(),
+        label: _isRunning ? 'Durdur' : 'Başlat',
+        onClicked: (menuItem) {
+          setState(() {
+            _isRunning = !_isRunning;
+          });
+          _updateSystemTrayTooltip();
+        },
       ),
       MenuSeparator(),
       MenuItemLabel(
-        label: 'Çıkış',
+        label: 'Pencereyi Göster',
+        onClicked: (menuItem) async {
+          await windowManager.show();
+          await windowManager.focus();
+        },
+      ),
+      MenuItemLabel(
+        label: 'Pencereyi Gizle',
+        onClicked: (menuItem) async {
+          await windowManager.hide();
+        },
+      ),
+      MenuSeparator(),
+      MenuItemLabel(
+        label: 'Ayarlar',
+        onClicked: (menuItem) async {
+          await windowManager.show();
+          await windowManager.focus();
+          _openSettings();
+        },
+      ),
+      MenuSeparator(),
+      MenuItemLabel(
+        label: 'Uygulamayı Kapat',
         onClicked: (menuItem) {
-          windowManager.destroy();
-          exit(0);
+          _confirmExit();
         },
       ),
     ]);
@@ -91,14 +127,59 @@ class _HomePageState extends State<HomePage> with WindowListener {
     _systemTray.registerSystemTrayEventHandler((eventName) {
       if (eventName == kSystemTrayEventClick) {
         Platform.isWindows
-            ? windowManager.show()
+            ? _toggleWindow()
             : _systemTray.popUpContextMenu();
       } else if (eventName == kSystemTrayEventRightClick) {
         Platform.isWindows
             ? _systemTray.popUpContextMenu()
-            : windowManager.show();
+            : _toggleWindow();
       }
     });
+  }
+
+  Future<void> _toggleWindow() async {
+    bool isVisible = await windowManager.isVisible();
+    if (isVisible) {
+      await windowManager.hide();
+    } else {
+      await windowManager.show();
+      await windowManager.focus();
+    }
+  }
+
+  Future<void> _updateSystemTrayTooltip() async {
+    await _systemTray.setToolTip(
+        "Ergonomik Asistan - ${_isRunning ? 'Çalışıyor' : 'Durduruldu'}"
+    );
+  }
+
+  Future<void> _confirmExit() async {
+    await windowManager.show();
+    await windowManager.focus();
+
+    bool? shouldExit = await showDialog<bool>(
+      context: context,
+      builder: (context) => AlertDialog(
+        title: const Text('Uygulamayı Kapat'),
+        content: const Text('Ergonomik Asistan\'ı tamamen kapatmak istiyor musunuz?'),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.of(context).pop(false),
+            child: const Text('İptal'),
+          ),
+          TextButton(
+            onPressed: () => Navigator.of(context).pop(true),
+            child: const Text('Kapat'),
+          ),
+        ],
+      ),
+    );
+
+    if (shouldExit == true) {
+      await _systemTray.destroy();
+      await windowManager.destroy();
+      exit(0);
+    }
   }
 
   Future<void> _initNotifications() async {
@@ -149,12 +230,20 @@ class _HomePageState extends State<HomePage> with WindowListener {
       _silentStart = TimeOfDay(hour: startHour, minute: startMinute);
       _silentEnd = TimeOfDay(hour: endHour, minute: endMinute);
 
-      // Otomatik başlatma
+      // Otomatik başlatma - Hata kontrolü ile
       _autoStart = _prefs.getBool('auto_start') ?? false;
       if (_autoStart) {
-        launchAtStartup.enable();
+        try {
+          launchAtStartup.enable();
+        } catch (e) {
+          print('Launch at startup enable failed: $e');
+        }
       } else {
-        launchAtStartup.disable();
+        try {
+          launchAtStartup.disable();
+        } catch (e) {
+          print('Launch at startup disable failed: $e');
+        }
       }
     });
   }
@@ -272,24 +361,76 @@ class _HomePageState extends State<HomePage> with WindowListener {
     await _prefs.setInt('silent_end_hour', _silentEnd.hour);
     await _prefs.setInt('silent_end_minute', _silentEnd.minute);
 
-    // Otomatik başlatma
+    // Otomatik başlatma - Hata kontrolü ile
     await _prefs.setBool('auto_start', _autoStart);
     if (_autoStart) {
-      await launchAtStartup.enable();
+      try {
+        await launchAtStartup.enable();
+      } catch (e) {
+        print('Launch at startup enable failed: $e');
+      }
     } else {
-      await launchAtStartup.disable();
+      try {
+        await launchAtStartup.disable();
+      } catch (e) {
+        print('Launch at startup disable failed: $e');
+      }
+    }
+  }
+
+  void _openSettings() {
+    Navigator.push(
+      context,
+      MaterialPageRoute(
+        builder: (context) => SettingsPage(
+          enabledReminders: _enabledReminders,
+          reminderIntervals: _reminderIntervals,
+          silentStart: _silentStart,
+          silentEnd: _silentEnd,
+          autoStart: _autoStart,
+          onSettingsChanged: (enabled, intervals, start, end, autoStart) {
+            setState(() {
+              _enabledReminders = enabled;
+              _reminderIntervals = intervals;
+              _silentStart = start;
+              _silentEnd = end;
+              _autoStart = autoStart;
+            });
+            _saveSettings();
+          },
+        ),
+      ),
+    );
+  }
+
+  // Pencere kapatma olayını yönetir
+  @override
+  Future<void> onWindowClose() async {
+    // Pencereyi kapatma yerine gizle
+    await windowManager.hide();
+
+    // Sadece debug modunda bilgi ver
+    if (mounted) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(
+          content: Text('Uygulama sistem tepsisinde çalışmaya devam ediyor'),
+          duration: Duration(seconds: 2),
+        ),
+      );
     }
   }
 
   @override
-  void onWindowClose() {
-    windowManager.hide();
+  Future<void> onWindowCloseRequested() async {
+    // macOS için ek güvenlik
+    await windowManager.hide();
   }
 
   @override
   void dispose() {
     _mainTimer?.cancel();
     windowManager.removeListener(this);
+    _systemTray.destroy();
     super.dispose();
   }
 
@@ -300,32 +441,15 @@ class _HomePageState extends State<HomePage> with WindowListener {
         title: const Text('Ergonomik Asistan'),
         actions: [
           IconButton(
-            icon: const Icon(Icons.settings),
-            onPressed: () {
-              Navigator.push(
-                context,
-                MaterialPageRoute(
-                  builder: (context) => SettingsPage(
-                    enabledReminders: _enabledReminders,
-                    reminderIntervals: _reminderIntervals,
-                    silentStart: _silentStart,
-                    silentEnd: _silentEnd,
-                    autoStart: _autoStart,
-                    onSettingsChanged:
-                        (enabled, intervals, start, end, autoStart) {
-                          setState(() {
-                            _enabledReminders = enabled;
-                            _reminderIntervals = intervals;
-                            _silentStart = start;
-                            _silentEnd = end;
-                            _autoStart = autoStart;
-                          });
-                          _saveSettings();
-                        },
-                  ),
-                ),
-              );
+            icon: const Icon(Icons.minimize),
+            onPressed: () async {
+              await windowManager.hide();
             },
+            tooltip: 'Sistem tepsisine gizle',
+          ),
+          IconButton(
+            icon: const Icon(Icons.settings),
+            onPressed: _openSettings,
           ),
         ],
       ),
@@ -342,7 +466,6 @@ class _HomePageState extends State<HomePage> with WindowListener {
             padding: const EdgeInsets.all(20.0),
             child: Column(
               mainAxisAlignment: MainAxisAlignment.spaceEvenly,
-
               children: [
                 // Ana durum kartı
                 Card(
@@ -371,11 +494,11 @@ class _HomePageState extends State<HomePage> with WindowListener {
                           _isRunning ? 'Takip Aktif' : 'Takip Durduruldu',
                           style: Theme.of(context).textTheme.headlineSmall
                               ?.copyWith(
-                                color: _isRunning
-                                    ? Colors.deepPurple
-                                    : Colors.grey,
-                                fontWeight: FontWeight.bold,
-                              ),
+                            color: _isRunning
+                                ? Colors.deepPurple
+                                : Colors.grey,
+                            fontWeight: FontWeight.bold,
+                          ),
                         ),
                         const SizedBox(height: 10),
                         Text(
@@ -399,6 +522,7 @@ class _HomePageState extends State<HomePage> with WindowListener {
                       setState(() {
                         _isRunning = !_isRunning;
                       });
+                      _updateSystemTrayTooltip();
                     },
                     icon: Icon(
                       _isRunning ? Icons.pause : Icons.play_arrow,
@@ -450,6 +574,32 @@ class _HomePageState extends State<HomePage> with WindowListener {
                   ],
                 ),
 
+                // Sistem tepsisi bilgi kartı
+                Container(
+                  width: double.infinity,
+                  padding: const EdgeInsets.all(16),
+                  decoration: BoxDecoration(
+                    color: Colors.blue.shade50,
+                    borderRadius: BorderRadius.circular(12),
+                    border: Border.all(color: Colors.blue.shade200),
+                  ),
+                  child: Row(
+                    children: [
+                      Icon(Icons.info_outline, color: Colors.blue.shade600),
+                      const SizedBox(width: 10),
+                      Expanded(
+                        child: Text(
+                          'Uygulama sistem tepsisinde çalışmaya devam eder. Tamamen kapatmak için sistem tepsisindeki menüyü kullanın.',
+                          style: TextStyle(
+                            color: Colors.blue.shade700,
+                            fontSize: 13,
+                          ),
+                        ),
+                      ),
+                    ],
+                  ),
+                ),
+
                 // Sessiz saatler uyarısı
                 if (_isInSilentHours())
                   Container(
@@ -477,13 +627,7 @@ class _HomePageState extends State<HomePage> with WindowListener {
                     ),
                   ),
 
-                DesignerCredits(
-                  designerName: "Metehan DER",
-                  // İsteğe bağlı parametreler
-                  animationPath: 'assets/animations/fire.json',
-                  // showDuration: Duration(seconds: 5),
-                  // animationDuration: Duration(milliseconds: 500),
-                ),
+
               ],
             ),
           ),
@@ -493,11 +637,11 @@ class _HomePageState extends State<HomePage> with WindowListener {
   }
 
   Widget _buildStatusCard(
-    String title,
-    String value,
-    IconData icon,
-    Color color,
-  ) {
+      String title,
+      String value,
+      IconData icon,
+      Color color,
+      ) {
     return Card(
       elevation: 3,
       child: Container(
@@ -535,7 +679,7 @@ class _HomePageState extends State<HomePage> with WindowListener {
       if (entry.value) {
         int timeLeft =
             _reminderIntervals[entry.key]! -
-            (_workMinutes % _reminderIntervals[entry.key]!);
+                (_workMinutes % _reminderIntervals[entry.key]!);
         if (timeLeft < minTime) {
           minTime = timeLeft;
         }

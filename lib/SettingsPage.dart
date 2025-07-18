@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'config.dart';
+import 'credits.dart';
 
 class SettingsPage extends StatefulWidget {
   final Map<String, bool> enabledReminders;
@@ -8,12 +9,12 @@ class SettingsPage extends StatefulWidget {
   final TimeOfDay silentEnd;
   final bool autoStart;
   final Function(
-      Map<String, bool>,
-      Map<String, int>,
-      TimeOfDay,
-      TimeOfDay,
-      bool,
-      )
+    Map<String, bool>,
+    Map<String, int>,
+    TimeOfDay,
+    TimeOfDay,
+    bool,
+  )
   onSettingsChanged;
 
   const SettingsPage({
@@ -145,6 +146,15 @@ class _SettingsPageState extends State<SettingsPage> {
               ),
             ),
             const SizedBox(height: 20),
+            DesignerCredits(
+              designerName: "Metehan DER",
+              // İsteğe bağlı parametreler
+              animationPath: 'assets/animations/fire.json',
+              // showDuration: Duration(seconds: 5),
+              // animationDuration: Duration(milliseconds: 500),
+            ),
+
+            const SizedBox(height: 50),
           ],
         ),
       ),
