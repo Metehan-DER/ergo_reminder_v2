@@ -69,22 +69,12 @@ class _HomePageState extends State<HomePage> with WindowListener, TrayListener {
     try {
       // Windows için farklı yöntemler dene
       if (Platform.isWindows) {
-        // Yöntem 1: Base64 encoded icon kullan
-        const String base64Icon =
-            'iVBORw0KGgoAAAANSUhEUgAAABAAAAAQCAYAAAAf8/9hAAAABHNCSVQICAgIfAhkiAAAAAlwSFlzAAAAdgAAAHYBTnsmCAAAABl0RVh0U29mdHdhcmUAd3d3Lmlua3NjYXBlLm9yZ5vuPBoAAAHJSURBVDiNpZO9S1VRHMc/5977rnpfKr28BhEV9TJolNCQUEJTRBANDf0FDQ0REQVBQ0tLQyA0REOL4NRQgkNDEA1BEL3Ji0qzUrI33nfveafhlKnde+8zfOHAOZzz+37O73fO+QmqRNd1z3Vd10s/hRAKUBJCdNTyvRJd133A/hpBvoqu64sVQggpSilBCHEGeK/sKYBuYLYQok8I8d013U8p5W4AGWMopbTHdV3PKMsylFKaUsr0d9d1PbOa7pOUMgIglVLGNU3rklIuVxs8CCAVRdkK7AA6gRjwSgjxCPgghLgLIByg3W639wP7gG1Ap1LKRqBJKWW7UspJ27YnWZaZQoi5AFJKaVtLSwvhcHjNm2VZ5HI5hBBV0yuglPLF1atX8fv9hMNhhBBEo1GklHi9XhobGykWizx+/Jh0Ol2LB4AQQtxwHIfh4WE0TWNhYYFSqYSUknw+j+M4CCHo7+8nFArVJK8ATqeT5wYGBmhoaKBcLmOaJoZhMD8/j67rRCIRBgcHa1n7BYVC4RSAEIJQKIRpmjiOw8zMDLFYjEQigaZp1dpaBXVN5z+gq9pCjRt4x3EcTNOsS7fqBP8avgP4Hny1L+sHPgAAAABJRU5ErkJggg==';
-
-        try {
-          await trayManager.setIcon(base64Icon);
-          debugPrint('Windows: Base64 icon set successfully');
-        } catch (e) {
-          debugPrint('Windows: Base64 icon failed: $e');
-          // Icon olmadan devam et
-        }
+        _setWindowsIcon();
       } else if (Platform.isMacOS) {
         // macOS için sistem ikonu kullan
         try {
           // Önce template icon dene
-          await trayManager.setIcon('assets/logo.png', isTemplate: true);
+          await trayManager.setIcon('assets/icons/app_logo.png', isTemplate: true);
           debugPrint('macOS: Template icon set successfully');
         } catch (e) {
           debugPrint('macOS: Icon failed: $e');
@@ -103,6 +93,24 @@ class _HomePageState extends State<HomePage> with WindowListener, TrayListener {
       debugPrint('Tray manager initialized successfully');
     } catch (e) {
       debugPrint('Tray manager initialization error: $e');
+    }
+  }
+
+  Future<void> _setWindowsIcon() async {
+    try {
+      // Önce assets'den yükleme dene
+      await trayManager.setIcon('assets/icons/app_logo.ico');
+      debugPrint('Windows: Custom icon set successfully');
+    } catch (e) {
+      debugPrint('Windows: Custom icon failed, using fallback: $e');
+      // Fallback olarak basit bir ikon kullan
+      try {
+        await trayManager.setIcon('assets/icons/app_logo.png');
+      } catch (e) {
+        debugPrint('Windows: Fallback icon also failed: $e');
+        // Son çare olarak boş bırak (sistem default'u kullanılır)
+        await trayManager.setIcon('EH');
+      }
     }
   }
 
@@ -376,6 +384,7 @@ class _HomePageState extends State<HomePage> with WindowListener, TrayListener {
       presentBanner: true,
       presentSound: true,
     );
+
 
     const notificationDetails = NotificationDetails(
       windows: windowsDetails,
