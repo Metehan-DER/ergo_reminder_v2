@@ -10,6 +10,7 @@ import 'dart:io';
 
 import 'SettingsPage.dart';
 import 'config.dart';
+import 'package:flutter/services.dart'; // rootBundle için
 
 class HomePage extends StatefulWidget {
   const HomePage({super.key});
@@ -58,47 +59,61 @@ class _HomePageState extends State<HomePage> with WindowListener {
   }
 
   Future<void> _initSystemTray() async {
-    String path = Platform.isWindows ? 'assets/logo.png' : 'assets/logo.png';
+    try {
+      // Load the icon from assets
+      final byteData = await rootBundle.load('assets/logo.png');
+      final tempDir = Directory.systemTemp;
+      final file = await File('${tempDir.path}/logo.png').writeAsBytes(
+        byteData.buffer.asUint8List(
+          byteData.offsetInBytes,
+          byteData.lengthInBytes,
+        ),
+      );
 
-    await _systemTray.initSystemTray(
-      title: "Ergonomik Asistan",
-      iconPath: path,
-      toolTip: "Ergonomik Asistan",
-    );
+      // Initialize system tray
+      await _systemTray.initSystemTray(
+        title: "Ergonomik Asistan",
+        iconPath: file.path,
+        toolTip: "Ergonomik Asistan",
+      );
 
-    final Menu menu = Menu();
-    await menu.buildFrom([
-      MenuItemLabel(
-        label: 'Göster',
-        onClicked: (menuItem) => windowManager.show(),
-      ),
-      MenuItemLabel(
-        label: 'Gizle',
-        onClicked: (menuItem) => windowManager.hide(),
-      ),
-      MenuSeparator(),
-      MenuItemLabel(
-        label: 'Çıkış',
-        onClicked: (menuItem) {
-          windowManager.destroy();
-          exit(0);
-        },
-      ),
-    ]);
+      // Create context menu
+      final Menu menu = Menu();
+      await menu.buildFrom([
+        MenuItemLabel(
+          label: 'Göster',
+          onClicked: (menuItem) => windowManager.show(),
+        ),
+        MenuItemLabel(
+          label: 'Gizle',
+          onClicked: (menuItem) => windowManager.hide(),
+        ),
+        MenuSeparator(),
+        MenuItemLabel(
+          label: 'Çıkış',
+          onClicked: (menuItem) {
+            windowManager.destroy();
+            exit(0);
+          },
+        ),
+      ]);
 
-    await _systemTray.setContextMenu(menu);
+      await _systemTray.setContextMenu(menu);
 
-    _systemTray.registerSystemTrayEventHandler((eventName) {
-      if (eventName == kSystemTrayEventClick) {
-        Platform.isWindows
-            ? windowManager.show()
-            : _systemTray.popUpContextMenu();
-      } else if (eventName == kSystemTrayEventRightClick) {
-        Platform.isWindows
-            ? _systemTray.popUpContextMenu()
-            : windowManager.show();
-      }
-    });
+      _systemTray.registerSystemTrayEventHandler((eventName) {
+        if (eventName == kSystemTrayEventClick) {
+          Platform.isWindows
+              ? windowManager.show()
+              : _systemTray.popUpContextMenu();
+        } else if (eventName == kSystemTrayEventRightClick) {
+          Platform.isWindows
+              ? _systemTray.popUpContextMenu()
+              : windowManager.show();
+        }
+      });
+    } catch (e) {
+      debugPrint('System tray initialization error: $e');
+    }
   }
 
   Future<void> _initNotifications() async {
