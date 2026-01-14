@@ -20,7 +20,9 @@ void main() async {
     center: true,
     backgroundColor: Colors.transparent,
     skipTaskbar: false,
-    titleBarStyle: Platform.isMacOS ? TitleBarStyle.normal : TitleBarStyle.normal,
+    titleBarStyle: Platform.isMacOS
+        ? TitleBarStyle.normal
+        : TitleBarStyle.normal,
     title: 'Ergonomik Asistan',
     // macOS için window kapatıldığında uygulamayı kapatmasını engelle
     windowButtonVisibility: Platform.isMacOS ? true : null,

@@ -8,12 +8,20 @@ class SettingsPage extends StatefulWidget {
   final TimeOfDay silentStart;
   final TimeOfDay silentEnd;
   final bool autoStart;
+  // Yeni eklenen alanlar
+  final String userName;
+  final String selectedTitle;
+  final String gender;
+
   final Function(
     Map<String, bool>,
     Map<String, int>,
     TimeOfDay,
     TimeOfDay,
     bool,
+    String, // userName
+    String, // selectedTitle
+    String, // gender
   )
   onSettingsChanged;
 
@@ -24,6 +32,9 @@ class SettingsPage extends StatefulWidget {
     required this.silentStart,
     required this.silentEnd,
     required this.autoStart,
+    required this.userName,
+    required this.selectedTitle,
+    required this.gender,
     required this.onSettingsChanged,
   });
 
@@ -37,6 +48,76 @@ class _SettingsPageState extends State<SettingsPage> {
   late TimeOfDay _silentStart;
   late TimeOfDay _silentEnd;
   late bool _autoStart;
+
+  // Form alanları için state değişkenleri
+  late String _userName;
+  late String _selectedTitle;
+  late String _gender;
+
+  final List<String> _titles = [
+    "Yok",
+
+    // Samimi
+    "Dostum",
+    "Kanka",
+    "Abi",
+    "Reis",
+    "Patron",
+
+    // Saygın / Profesyonel
+    "Mühendis",
+    "Kıdemli Mühendis",
+    "Başmühendis",
+    "Teknik Lider",
+    "Sistem Mimarı",
+    "Baş Uzman",
+    "Danışman",
+    "Üstat",
+    "Bilge",
+
+    // Liderlik / Güç
+    "Kaptan",
+    "Komutan",
+    "Amiral",
+    "Başkomutan",
+    "Şef",
+    "Öncü",
+
+    // Kraliyet
+    "Kral",
+    "Kraliçe",
+    "Majesteleri",
+    "İmparator",
+    "Han",
+    "Kağan",
+    "Lord",
+
+    // Başarı
+    "Şampiyon",
+    "Efsane",
+    "Zirvedeki",
+    "MVP",
+    "Usta Oyuncu",
+
+    // Eğlenceli / Absürt
+    "Final Boss",
+    "Gizli Boss",
+    "CEO of Evren",
+    "Galaksiler Arası Müdür",
+    "Zaman Yolcusu",
+    "NPC Ama Önemli",
+    "Yan Görev Ustası",
+
+    // Kaotik / Meme
+    "Atak Helikopteri",
+    "Savaş Makinesi",
+    "Mobil Tehdit",
+    "Bug Avcısı",
+    "Exception Fırlatıcısı",
+    "Stack Overflow Lordu",
+    "Yapay Zeka (Ama Duygulu)",
+  ];
+  final List<String> _genders = ["Belirtilmemiş", "Erkek", "Kadın"];
 
   final Map<String, Map<String, dynamic>> _reminderData = {
     'eyeRest': {
@@ -79,6 +160,152 @@ class _SettingsPageState extends State<SettingsPage> {
     _silentStart = widget.silentStart;
     _silentEnd = widget.silentEnd;
     _autoStart = widget.autoStart;
+    // Widget'tan gelen ilk değerleri atıyoruz
+    _userName = widget.userName;
+    _selectedTitle = widget.selectedTitle;
+    _gender = widget.gender;
+  }
+
+  // build metodu içinde "Sistem Ayarları" kartının üstüne veya altına ekleyebilirsin:
+  Widget _buildUserPersonalizationCard() {
+    return Card(
+      elevation: 8,
+      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(20)),
+      child: Container(
+        decoration: BoxDecoration(
+          borderRadius: BorderRadius.circular(16),
+          gradient: LinearGradient(
+            begin: Alignment.topLeft,
+            end: Alignment.bottomRight,
+            colors: [Colors.white, Colors.teal.withOpacity(0.05)],
+          ),
+        ),
+        child: Padding(
+          padding: const EdgeInsets.all(24),
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              // İsim Giriş Alanı
+              TextField(
+                style: const TextStyle(color: Colors.black),
+                decoration: InputDecoration(
+                  labelText: 'Adınız',
+                  labelStyle: const TextStyle(color: Colors.deepOrange),
+                  prefixIcon: const Icon(Icons.edit, color: Colors.deepOrange),
+                  // Normal Kenarlık
+                  enabledBorder: OutlineInputBorder(
+                    borderRadius: BorderRadius.circular(15),
+                    borderSide: BorderSide(
+                      color: Colors.deepPurple.withOpacity(0.3),
+                    ),
+                  ),
+                  // Tıklandığındaki Kenarlık
+                  focusedBorder: OutlineInputBorder(
+                    borderRadius: BorderRadius.circular(15),
+                    borderSide: const BorderSide(
+                      color: Colors.deepOrange,
+                      width: 2,
+                    ),
+                  ),
+                  filled: true,
+                  fillColor: Colors.deepPurple.withOpacity(0.05),
+                ),
+                controller: TextEditingController(text: _userName)
+                  ..selection = TextSelection.collapsed(
+                    offset: _userName.length,
+                  ),
+                onChanged: (value) => _userName = value,
+              ),
+
+              const SizedBox(height: 18),
+
+              // Unvan Seçimi
+              DropdownButtonFormField<String>(
+                value: _selectedTitle,
+                dropdownColor: Colors.white, // Menü açıldığında arka plan
+                style: const TextStyle(
+                  color: Colors.black,
+                  fontWeight: FontWeight.w600,
+                  fontStyle: FontStyle.italic,
+                ),
+                decoration: InputDecoration(
+                  labelText: 'Hitap Unvanı',
+                  labelStyle: const TextStyle(color: Colors.deepOrange),
+                  enabledBorder: OutlineInputBorder(
+                    borderRadius: BorderRadius.circular(15),
+                    borderSide: BorderSide(
+                      color: Colors.deepPurple.withOpacity(0.3),
+                    ),
+                  ),
+                  focusedBorder: OutlineInputBorder(
+                    borderRadius: BorderRadius.circular(15),
+                    borderSide: const BorderSide(
+                      color: Colors.deepOrange,
+                      width: 2,
+                    ),
+                  ),
+                  filled: true,
+                  fillColor: Colors.deepPurple.withOpacity(0.05),
+                ),
+                items: _titles
+                    .map((t) => DropdownMenuItem(value: t, child: Text(t)))
+                    .toList(),
+                onChanged: (value) => setState(() => _selectedTitle = value!),
+              ),
+
+              const SizedBox(height: 18),
+
+              // Cinsiyet Seçimi
+              DropdownButtonFormField<String>(
+                value: _gender,
+                dropdownColor: Colors.white,
+                style: const TextStyle(color: Colors.black),
+                decoration: InputDecoration(
+                  labelText: 'Cinsiyet',
+                  labelStyle: const TextStyle(color: Colors.deepOrange),
+                  enabledBorder: OutlineInputBorder(
+                    borderRadius: BorderRadius.circular(15),
+                    borderSide: BorderSide(
+                      color: Colors.deepPurple.withOpacity(0.3),
+                    ),
+                  ),
+                  focusedBorder: OutlineInputBorder(
+                    borderRadius: BorderRadius.circular(15),
+                    borderSide: const BorderSide(
+                      color: Colors.deepOrange,
+                      width: 2,
+                    ),
+                  ),
+                  filled: true,
+                  fillColor: Colors.deepOrange.withOpacity(0.05),
+                ),
+                items: _genders
+                    .map((g) => DropdownMenuItem(value: g, child: Text(g)))
+                    .toList(),
+                onChanged: (value) => setState(() => _gender = value!),
+              ),
+            ],
+          ),
+        ),
+      ),
+    );
+  }
+
+  Widget _buildSectionTitle(String title, IconData icon) {
+    return Row(
+      children: [
+        Icon(icon, color: Colors.white, size: 24),
+        const SizedBox(width: 12),
+        Text(
+          title,
+          style: const TextStyle(
+            fontSize: 20,
+            fontWeight: FontWeight.bold,
+            color: Colors.white,
+          ),
+        ),
+      ],
+    );
   }
 
   @override
@@ -96,6 +323,10 @@ class _SettingsPageState extends State<SettingsPage> {
         child: ListView(
           padding: const EdgeInsets.all(16),
           children: [
+            _buildSectionTitle('Profil Özelleştir', Icons.person),
+
+            _buildUserPersonalizationCard(),
+
             _buildSectionTitle('Hatırlatıcı Ayarları', Icons.notifications),
             const SizedBox(height: 16),
             ..._reminderData.entries.map((entry) {
@@ -124,6 +355,9 @@ class _SettingsPageState extends State<SettingsPage> {
                     _silentStart,
                     _silentEnd,
                     _autoStart,
+                    _userName,
+                    _selectedTitle,
+                    _gender,
                   );
                   Navigator.pop(context);
                   ScaffoldMessenger.of(context).showSnackBar(
@@ -157,26 +391,6 @@ class _SettingsPageState extends State<SettingsPage> {
             const SizedBox(height: 50),
           ],
         ),
-      ),
-    );
-  }
-
-  Widget _buildSectionTitle(String title, IconData icon) {
-    return Container(
-      padding: const EdgeInsets.symmetric(vertical: 8),
-      child: Row(
-        children: [
-          Icon(icon, color: Colors.white, size: 24),
-          const SizedBox(width: 12),
-          Text(
-            title,
-            style: const TextStyle(
-              fontSize: 20,
-              fontWeight: FontWeight.bold,
-              color: Colors.white,
-            ),
-          ),
-        ],
       ),
     );
   }
