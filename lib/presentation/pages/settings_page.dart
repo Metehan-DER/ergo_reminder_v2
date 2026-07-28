@@ -1,48 +1,19 @@
 import 'package:flutter/material.dart';
-import 'config.dart';
-import 'credits.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
+import '../../l10n/app_localizations.dart';
+import '../../core/config/app_config.dart';
+import '../widgets/designer_credits.dart';
+import '../providers/settings_provider.dart';
+import '../../domain/entities/settings_entity.dart';
 
-class SettingsPage extends StatefulWidget {
-  final Map<String, bool> enabledReminders;
-  final Map<String, int> reminderIntervals;
-  final TimeOfDay silentStart;
-  final TimeOfDay silentEnd;
-  final bool autoStart;
-  // Yeni eklenen alanlar
-  final String userName;
-  final String selectedTitle;
-  final String gender;
-
-  final Function(
-    Map<String, bool>,
-    Map<String, int>,
-    TimeOfDay,
-    TimeOfDay,
-    bool,
-    String, // userName
-    String, // selectedTitle
-    String, // gender
-  )
-  onSettingsChanged;
-
-  const SettingsPage({
-    super.key,
-    required this.enabledReminders,
-    required this.reminderIntervals,
-    required this.silentStart,
-    required this.silentEnd,
-    required this.autoStart,
-    required this.userName,
-    required this.selectedTitle,
-    required this.gender,
-    required this.onSettingsChanged,
-  });
+class SettingsPage extends ConsumerStatefulWidget {
+  const SettingsPage({super.key});
 
   @override
-  State<SettingsPage> createState() => _SettingsPageState();
+  ConsumerState<SettingsPage> createState() => _SettingsPageState();
 }
 
-class _SettingsPageState extends State<SettingsPage> {
+class _SettingsPageState extends ConsumerState<SettingsPage> {
   late Map<String, bool> _enabledReminders;
   late Map<String, int> _reminderIntervals;
   late TimeOfDay _silentStart;
@@ -53,6 +24,10 @@ class _SettingsPageState extends State<SettingsPage> {
   late String _userName;
   late String _selectedTitle;
   late String _gender;
+
+  // TextEditingController'lar state'de tutulur — hafiza sızıntısı önlemek için
+  late TextEditingController _nameController;
+  final Map<String, TextEditingController> _intervalControllers = {};
 
   final List<String> _titles = [
     "Yok",
@@ -117,6 +92,56 @@ class _SettingsPageState extends State<SettingsPage> {
     "Stack Overflow Lordu",
     "Yapay Zeka (Ama Duygulu)",
   ];
+
+  static const Map<String, String> _englishTitles = {
+    "Yok": "None",
+    "Dostum": "Buddy",
+    "Kanka": "Bro",
+    "Abi": "Big Bro",
+    "Reis": "Chief",
+    "Patron": "Boss",
+    "Mühendis": "Engineer",
+    "Kıdemli Mühendis": "Senior Engineer",
+    "Başmühendis": "Chief Engineer",
+    "Teknik Lider": "Tech Lead",
+    "Sistem Mimarı": "Systems Architect",
+    "Baş Uzman": "Principal Expert",
+    "Danışman": "Consultant",
+    "Üstat": "Master",
+    "Bilge": "Sage",
+    "Kaptan": "Captain",
+    "Komutan": "Commander",
+    "Amiral": "Admiral",
+    "Başkomutan": "Commander-in-Chief",
+    "Şef": "Chief",
+    "Öncü": "Pioneer",
+    "Kral": "King",
+    "Kraliçe": "Queen",
+    "Majesteleri": "Your Majesty",
+    "İmparator": "Emperor",
+    "Han": "Khan",
+    "Kağan": "Khagan",
+    "Lord": "Lord",
+    "Şampiyon": "Champion",
+    "Efsane": "Legend",
+    "Zirvedeki": "At the Peak",
+    "MVP": "MVP",
+    "Usta Oyuncu": "Master Player",
+    "Final Boss": "Final Boss",
+    "Gizli Boss": "Secret Boss",
+    "CEO of Evren": "CEO of the Universe",
+    "Galaksiler Arası Müdür": "Intergalactic Manager",
+    "Zaman Yolcusu": "Time Traveler",
+    "NPC Ama Önemli": "Important NPC",
+    "Yan Görev Ustası": "Side Quest Master",
+    "Atak Helikopteri": "Attack Helicopter",
+    "Savaş Makinesi": "War Machine",
+    "Mobil Tehdit": "Mobile Threat",
+    "Bug Avcısı": "Bug Hunter",
+    "Exception Fırlatıcısı": "Exception Thrower",
+    "Stack Overflow Lordu": "Stack Overflow Lord",
+    "Yapay Zeka (Ama Duygulu)": "Sentient AI",
+  };
   final List<String> _genders = ["Belirtilmemiş", "Erkek", "Kadın"];
 
   final Map<String, Map<String, dynamic>> _reminderData = {
@@ -152,18 +177,70 @@ class _SettingsPageState extends State<SettingsPage> {
     },
   };
 
+  bool _isInitialized = false;
+
+  void _initFromSettings(SettingsEntity settings) {
+    if (_isInitialized) return;
+    _enabledReminders = Map.from(settings.enabledReminders);
+    _reminderIntervals = Map.from(settings.reminderIntervals);
+    _silentStart = settings.silentStart;
+    _silentEnd = settings.silentEnd;
+    _autoStart = settings.autoStart;
+    _userName = settings.userName;
+    _selectedTitle = settings.userTitle;
+    _gender = settings.gender;
+
+    _nameController = TextEditingController(text: _userName);
+    for (final key in _reminderIntervals.keys) {
+      _intervalControllers[key] = TextEditingController(
+        text: _reminderIntervals[key].toString(),
+      );
+    }
+    _isInitialized = true;
+  }
+
+  late AppLocalizations _l10n;
+
   @override
-  void initState() {
-    super.initState();
-    _enabledReminders = Map.from(widget.enabledReminders);
-    _reminderIntervals = Map.from(widget.reminderIntervals);
-    _silentStart = widget.silentStart;
-    _silentEnd = widget.silentEnd;
-    _autoStart = widget.autoStart;
-    // Widget'tan gelen ilk değerleri atıyoruz
-    _userName = widget.userName;
-    _selectedTitle = widget.selectedTitle;
-    _gender = widget.gender;
+  void didChangeDependencies() {
+    super.didChangeDependencies();
+    _l10n = AppLocalizations.of(context);
+  }
+
+  String _getReminderName(String key) {
+    switch (key) {
+      case 'eyeRest': return _l10n.reminderEyeRest;
+      case 'posture': return _l10n.reminderPosture;
+      case 'water': return _l10n.reminderWater;
+      case 'stretch': return _l10n.reminderStretch;
+      case 'walk': return _l10n.reminderWalk;
+      default: return _l10n.reminderDefault;
+    }
+  }
+
+  String _getReminderDesc(String key) {
+    switch (key) {
+      case 'eyeRest': return _l10n.descEyeRest;
+      case 'posture': return _l10n.descPosture;
+      case 'water': return _l10n.descWater;
+      case 'stretch': return _l10n.descStretch;
+      case 'walk': return _l10n.descWalk;
+      default: return '';
+    }
+  }
+
+  String _getLocalizedTitle(String key) {
+    if (_l10n.localeName == 'tr') return key;
+    return _englishTitles[key] ?? key;
+  }
+
+  @override
+  void dispose() {
+    _nameController.dispose();
+    for (final c in _intervalControllers.values) {
+      c.dispose();
+    }
+    super.dispose();
   }
 
   // build metodu içinde "Sistem Ayarları" kartının üstüne veya altına ekleyebilirsin:
@@ -177,7 +254,7 @@ class _SettingsPageState extends State<SettingsPage> {
           gradient: LinearGradient(
             begin: Alignment.topLeft,
             end: Alignment.bottomRight,
-            colors: [Colors.white, Colors.teal.withOpacity(0.05)],
+            colors: [Colors.white, Colors.teal.withValues(alpha: 0.05)],
           ),
         ),
         child: Padding(
@@ -188,15 +265,16 @@ class _SettingsPageState extends State<SettingsPage> {
               // İsim Giriş Alanı
               TextField(
                 style: const TextStyle(color: Colors.black),
+                controller: _nameController,
                 decoration: InputDecoration(
-                  labelText: 'Adınız',
+                  labelText: _l10n.nameLabel,
                   labelStyle: const TextStyle(color: Colors.deepOrange),
                   prefixIcon: const Icon(Icons.edit, color: Colors.deepOrange),
                   // Normal Kenarlık
                   enabledBorder: OutlineInputBorder(
                     borderRadius: BorderRadius.circular(15),
                     borderSide: BorderSide(
-                      color: Colors.deepPurple.withOpacity(0.3),
+                      color: Colors.deepPurple.withValues(alpha: 0.3),
                     ),
                   ),
                   // Tıklandığındaki Kenarlık
@@ -208,12 +286,8 @@ class _SettingsPageState extends State<SettingsPage> {
                     ),
                   ),
                   filled: true,
-                  fillColor: Colors.deepPurple.withOpacity(0.05),
+                  fillColor: Colors.deepPurple.withValues(alpha: 0.05),
                 ),
-                controller: TextEditingController(text: _userName)
-                  ..selection = TextSelection.collapsed(
-                    offset: _userName.length,
-                  ),
                 onChanged: (value) => _userName = value,
               ),
 
@@ -221,7 +295,7 @@ class _SettingsPageState extends State<SettingsPage> {
 
               // Unvan Seçimi
               DropdownButtonFormField<String>(
-                value: _selectedTitle,
+                initialValue: _selectedTitle,
                 dropdownColor: Colors.white, // Menü açıldığında arka plan
                 style: const TextStyle(
                   color: Colors.black,
@@ -229,12 +303,12 @@ class _SettingsPageState extends State<SettingsPage> {
                   fontStyle: FontStyle.italic,
                 ),
                 decoration: InputDecoration(
-                  labelText: 'Hitap Unvanı',
+                  labelText: _l10n.titleLabel,
                   labelStyle: const TextStyle(color: Colors.deepOrange),
                   enabledBorder: OutlineInputBorder(
                     borderRadius: BorderRadius.circular(15),
                     borderSide: BorderSide(
-                      color: Colors.deepPurple.withOpacity(0.3),
+                      color: Colors.deepPurple.withValues(alpha: 0.3),
                     ),
                   ),
                   focusedBorder: OutlineInputBorder(
@@ -245,10 +319,10 @@ class _SettingsPageState extends State<SettingsPage> {
                     ),
                   ),
                   filled: true,
-                  fillColor: Colors.deepPurple.withOpacity(0.05),
+                  fillColor: Colors.deepPurple.withValues(alpha: 0.05),
                 ),
                 items: _titles
-                    .map((t) => DropdownMenuItem(value: t, child: Text(t)))
+                    .map((t) => DropdownMenuItem(value: t, child: Text(_getLocalizedTitle(t))))
                     .toList(),
                 onChanged: (value) => setState(() => _selectedTitle = value!),
               ),
@@ -257,16 +331,16 @@ class _SettingsPageState extends State<SettingsPage> {
 
               // Cinsiyet Seçimi
               DropdownButtonFormField<String>(
-                value: _gender,
+                initialValue: _gender,
                 dropdownColor: Colors.white,
                 style: const TextStyle(color: Colors.black),
                 decoration: InputDecoration(
-                  labelText: 'Cinsiyet',
+                  labelText: _l10n.genderLabel,
                   labelStyle: const TextStyle(color: Colors.deepOrange),
                   enabledBorder: OutlineInputBorder(
                     borderRadius: BorderRadius.circular(15),
                     borderSide: BorderSide(
-                      color: Colors.deepPurple.withOpacity(0.3),
+                      color: Colors.deepPurple.withValues(alpha: 0.3),
                     ),
                   ),
                   focusedBorder: OutlineInputBorder(
@@ -277,11 +351,19 @@ class _SettingsPageState extends State<SettingsPage> {
                     ),
                   ),
                   filled: true,
-                  fillColor: Colors.deepOrange.withOpacity(0.05),
+                  fillColor: Colors.deepOrange.withValues(alpha: 0.05),
                 ),
-                items: _genders
-                    .map((g) => DropdownMenuItem(value: g, child: Text(g)))
-                    .toList(),
+                items: _genders.map((g) {
+                  String localizedG;
+                  if (g == "Erkek") {
+                    localizedG = _l10n.genderMale;
+                  } else if (g == "Kadın") {
+                    localizedG = _l10n.genderFemale;
+                  } else {
+                    localizedG = _l10n.genderUnspecified;
+                  }
+                  return DropdownMenuItem(value: g, child: Text(localizedG));
+                }).toList(),
                 onChanged: (value) => setState(() => _gender = value!),
               ),
             ],
@@ -310,8 +392,15 @@ class _SettingsPageState extends State<SettingsPage> {
 
   @override
   Widget build(BuildContext context) {
-    return Scaffold(
-      appBar: AppBar(title: const Text('Ayarlar'), elevation: 0),
+    final settingsAsync = ref.watch(settingsProvider);
+
+    return settingsAsync.when(
+      loading: () => const Scaffold(body: Center(child: CircularProgressIndicator())),
+      error: (e, s) => Scaffold(body: Center(child: Text('Error: $e'))),
+      data: (settings) {
+        _initFromSettings(settings);
+        return Scaffold(
+          appBar: AppBar(title: Text(_l10n.settingsTitle), elevation: 0),
       body: Container(
         decoration: const BoxDecoration(
           gradient: LinearGradient(
@@ -323,53 +412,57 @@ class _SettingsPageState extends State<SettingsPage> {
         child: ListView(
           padding: const EdgeInsets.all(16),
           children: [
-            _buildSectionTitle('Profil Özelleştir', Icons.person),
+            _buildSectionTitle(_l10n.profileSection, Icons.person),
 
             _buildUserPersonalizationCard(),
 
-            _buildSectionTitle('Hatırlatıcı Ayarları', Icons.notifications),
+            _buildSectionTitle(_l10n.reminderSettingsSection, Icons.notifications),
             const SizedBox(height: 16),
             ..._reminderData.entries.map((entry) {
               return _buildReminderCard(entry.key, entry.value);
-            }).toList(),
+            }),
 
             const SizedBox(height: 32),
-            _buildSectionTitle('Sessiz Saatler', Icons.nightlight_round),
+            _buildSectionTitle(_l10n.silentHoursSection, Icons.nightlight_round),
             const SizedBox(height: 16),
             _buildSilentHoursCard(),
 
             const SizedBox(height: 32),
-            _buildSectionTitle('Sistem Ayarları', Icons.settings),
+            _buildSectionTitle(_l10n.systemSettingsSection, Icons.settings),
             const SizedBox(height: 16),
             _buildSystemSettingsCard(),
 
             const SizedBox(height: 32),
-            Container(
+            SizedBox(
               width: double.infinity,
               height: 50,
               child: ElevatedButton.icon(
-                onPressed: () {
-                  widget.onSettingsChanged(
-                    _enabledReminders,
-                    _reminderIntervals,
-                    _silentStart,
-                    _silentEnd,
-                    _autoStart,
-                    _userName,
-                    _selectedTitle,
-                    _gender,
+                onPressed: () async {
+                  final newSettings = SettingsEntity(
+                    userName: _userName,
+                    userTitle: _selectedTitle,
+                    gender: _gender,
+                    autoStart: _autoStart,
+                    silentStart: _silentStart,
+                    silentEnd: _silentEnd,
+                    enabledReminders: _enabledReminders,
+                    reminderIntervals: _reminderIntervals,
                   );
+                  
+                  await ref.read(settingsProvider.notifier).updateSettings(newSettings);
+                  
+                  if (!context.mounted) return;
                   Navigator.pop(context);
                   ScaffoldMessenger.of(context).showSnackBar(
                     SnackBar(
-                      content: const Text('Ayarlar başarıyla kaydedildi'),
+                      content: Text(_l10n.settingsSaved),
                       backgroundColor: Colors.green,
                       behavior: SnackBarBehavior.floating,
                     ),
                   );
                 },
                 icon: const Icon(Icons.save),
-                label: const Text('Ayarları Kaydet'),
+                label: Text(_l10n.saveSettings),
                 style: ElevatedButton.styleFrom(
                   backgroundColor: Colors.deepPurple,
                   foregroundColor: Colors.white,
@@ -393,6 +486,7 @@ class _SettingsPageState extends State<SettingsPage> {
         ),
       ),
     );
+    });
   }
 
   Widget _buildReminderCard(String key, Map<String, dynamic> data) {
@@ -430,14 +524,14 @@ class _SettingsPageState extends State<SettingsPage> {
                       crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
                         Text(
-                          data['name'],
+                          _getReminderName(key),
                           style: const TextStyle(
                             fontSize: 18,
                             fontWeight: FontWeight.bold,
                           ),
                         ),
                         Text(
-                          data['description'],
+                          _getReminderDesc(key),
                           style: TextStyle(
                             fontSize: 14,
                             color: Colors.grey.shade600,
@@ -453,7 +547,7 @@ class _SettingsPageState extends State<SettingsPage> {
                         _enabledReminders[key] = value;
                       });
                     },
-                    activeColor: data['color'],
+                    activeThumbColor: data['color'],
                   ),
                 ],
               ),
@@ -467,13 +561,11 @@ class _SettingsPageState extends State<SettingsPage> {
                   ),
                   child: Row(
                     children: [
-                      const Text('Her ', style: TextStyle(fontSize: 16)),
-                      Container(
+                      Text('${_l10n.every} ', style: const TextStyle(fontSize: 16)),
+                      SizedBox(
                         width: 80,
                         child: TextField(
-                          controller: TextEditingController(
-                            text: _reminderIntervals[key].toString(),
-                          ),
+                          controller: _intervalControllers[key],
                           keyboardType: TextInputType.number,
                           textAlign: TextAlign.center,
                           decoration: InputDecoration(
@@ -496,7 +588,7 @@ class _SettingsPageState extends State<SettingsPage> {
                         ),
                       ),
                       Text(
-                        ' ${AppConfig.timeUnit}da bir',
+                        ' ${AppConfig.isTestMode ? _l10n.minuteShort : _l10n.minutesSuffix}',
                         style: const TextStyle(fontSize: 16),
                       ),
                     ],
@@ -532,7 +624,7 @@ class _SettingsPageState extends State<SettingsPage> {
                   Container(
                     padding: const EdgeInsets.all(12),
                     decoration: BoxDecoration(
-                      color: Colors.indigo.withOpacity(0.1),
+                      color: Colors.indigo.withValues(alpha: 0.1),
                       borderRadius: BorderRadius.circular(12),
                     ),
                     child: const Icon(
@@ -542,20 +634,20 @@ class _SettingsPageState extends State<SettingsPage> {
                     ),
                   ),
                   const SizedBox(width: 16),
-                  const Expanded(
+                  Expanded(
                     child: Column(
                       crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
                         Text(
-                          'Sessiz Saatler',
-                          style: TextStyle(
+                          _l10n.silentHoursSection,
+                          style: const TextStyle(
                             fontSize: 18,
                             fontWeight: FontWeight.bold,
                           ),
                         ),
                         Text(
-                          'Bu saatler arasında hatırlatıcılar susturulur',
-                          style: TextStyle(fontSize: 14, color: Colors.grey),
+                          _l10n.silentHoursDesc,
+                          style: const TextStyle(fontSize: 14, color: Colors.grey),
                         ),
                       ],
                     ),
@@ -574,9 +666,9 @@ class _SettingsPageState extends State<SettingsPage> {
                     Row(
                       mainAxisAlignment: MainAxisAlignment.spaceBetween,
                       children: [
-                        const Text(
-                          'Başlangıç Saati:',
-                          style: TextStyle(fontSize: 16),
+                        Text(
+                          _l10n.startTimeLabel,
+                          style: const TextStyle(fontSize: 16),
                         ),
                         Container(
                           padding: const EdgeInsets.symmetric(
@@ -584,7 +676,7 @@ class _SettingsPageState extends State<SettingsPage> {
                             vertical: 8,
                           ),
                           decoration: BoxDecoration(
-                            color: Colors.deepPurple.withOpacity(0.1),
+                            color: Colors.deepPurple.withValues(alpha: 0.1),
                             borderRadius: BorderRadius.circular(20),
                           ),
                           child: TextButton(
@@ -615,9 +707,9 @@ class _SettingsPageState extends State<SettingsPage> {
                     Row(
                       mainAxisAlignment: MainAxisAlignment.spaceBetween,
                       children: [
-                        const Text(
-                          'Bitiş Saati:',
-                          style: TextStyle(fontSize: 16),
+                        Text(
+                          _l10n.endTimeLabel,
+                          style: const TextStyle(fontSize: 16),
                         ),
                         Container(
                           padding: const EdgeInsets.symmetric(
@@ -625,7 +717,7 @@ class _SettingsPageState extends State<SettingsPage> {
                             vertical: 8,
                           ),
                           decoration: BoxDecoration(
-                            color: Colors.deepPurple.withOpacity(0.1),
+                            color: Colors.deepPurple.withValues(alpha: 0.1),
                             borderRadius: BorderRadius.circular(20),
                           ),
                           child: TextButton(
@@ -685,7 +777,7 @@ class _SettingsPageState extends State<SettingsPage> {
                   Container(
                     padding: const EdgeInsets.all(12),
                     decoration: BoxDecoration(
-                      color: Colors.teal.withOpacity(0.1),
+                      color: Colors.teal.withValues(alpha: 0.1),
                       borderRadius: BorderRadius.circular(12),
                     ),
                     child: const Icon(
@@ -695,20 +787,20 @@ class _SettingsPageState extends State<SettingsPage> {
                     ),
                   ),
                   const SizedBox(width: 16),
-                  const Expanded(
+                  Expanded(
                     child: Column(
                       crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
                         Text(
-                          'Sistem Ayarları',
-                          style: TextStyle(
+                          _l10n.systemSettingsSection,
+                          style: const TextStyle(
                             fontSize: 18,
                             fontWeight: FontWeight.bold,
                           ),
                         ),
                         Text(
-                          'Uygulama başlatma ve sistem entegrasyonu',
-                          style: TextStyle(fontSize: 14, color: Colors.grey),
+                          _l10n.systemSettingsDesc,
+                          style: const TextStyle(fontSize: 14, color: Colors.grey),
                         ),
                       ],
                     ),
@@ -726,20 +818,20 @@ class _SettingsPageState extends State<SettingsPage> {
                   children: [
                     const Icon(Icons.power_settings_new, color: Colors.teal),
                     const SizedBox(width: 12),
-                    const Expanded(
+                    Expanded(
                       child: Column(
                         crossAxisAlignment: CrossAxisAlignment.start,
                         children: [
                           Text(
-                            'Sistem başlangıcında otomatik çalıştır',
-                            style: TextStyle(
+                            _l10n.autoStartLabel,
+                            style: const TextStyle(
                               fontSize: 16,
                               fontWeight: FontWeight.w500,
                             ),
                           ),
                           Text(
-                            'Bilgisayar açıldığında uygulamayı başlat',
-                            style: TextStyle(fontSize: 14, color: Colors.grey),
+                            _l10n.autoStartDesc,
+                            style: const TextStyle(fontSize: 14, color: Colors.grey),
                           ),
                         ],
                       ),
@@ -751,7 +843,7 @@ class _SettingsPageState extends State<SettingsPage> {
                           _autoStart = value;
                         });
                       },
-                      activeColor: Colors.teal,
+                      activeThumbColor: Colors.teal,
                     ),
                   ],
                 ),

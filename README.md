@@ -1,86 +1,114 @@
-# Ergonomik Asistan
+# 🧘 Ergonomik Asistan
 
-Ofis çalışanları için ergonomik hatırlatıcı uygulaması. Windows ve macOS platformlarında çalışır.
+> Ofis çalışanları için masaüstü ergonomi takip uygulaması. Flutter ile geliştirilmiş, Windows ve macOS üzerinde çalışır.
 
-## Özellikler
+---
 
-- ⏰ **Özelleştirilebilir Hatırlatmalar**
-    - Göz dinlendirme (varsayılan: 40 dakika)
-    - Duruş kontrolü (varsayılan: 30 dakika)
-    - Su içme (varsayılan: 60 dakika)
-    - Esneme (varsayılan: 50 dakika)
-    - Yürüyüş molası (varsayılan: 120 dakika)
+## ✨ Özellikler
 
-- 🔕 **Sessiz Saatler**
-    - Belirlediğiniz saatler arasında bildirim göndermez
-    - Varsayılan: 22:00 - 08:00
+### 🔔 Akıllı Hatırlatıcılar
+| Hatırlatıcı | Varsayılan Aralık | Açıklama |
+|---|---|---|
+| 👁️ Göz Dinlendirme | 40 dakika | 20-20-20 kuralı — uzağa bak, gözlerini dinlendir |
+| 🧍 Duruş Kontrolü | 30 dakika | Sırtını dik tut, omuzlarını rahatlatı |
+| 💧 Su İçme | 60 dakika | Hidrasyon takibi |
+| 🤸 Esneme | 50 dakika | Kas gerginliğini gider |
+| 🚶 Yürüyüş Molası | 120 dakika | Kan dolaşımını artır |
 
-- 🚀 **Otomatik Başlatma**
-    - Bilgisayar açıldığında otomatik olarak başlar
+### ⚙️ Diğer Özellikler
+- 🔕 **Sessiz Saatler** — belirli saatler arasında bildirimleri sustur (varsayılan: 22:00–08:00)
+- 🚀 **Otomatik Başlatma** — sistem başlangıcında arka planda çal
+- 🎨 **Kişiselleştirme** — isim, unvan ve cinsiyete göre kişisel selamlama
+- 🖥️ **Sistem Tepsisi** — pencereyi kapatınca arka planda çalışmaya devam eder
+- ⏸️ **Durdur / Başlat** — takibi tek tuşla duraklat
+- 🌈 **Glassmorphism UI** — animasyonlu, renk değiştirebilen modern arayüz
 
-- 🔔 **Sistem Bildirimleri**
-    - Native bildirimler ile rahatsız edici olmayan hatırlatmalar
+---
 
-- 📍 **Sistem Tepsisi**
-    - Minimal görünüm, sistem tepsisinden kontrol
+## 📦 Kurulum
 
-## Kurulum
+### Gereksinimler
+- [Flutter SDK](https://flutter.dev/docs/get-started/install) (3.x veya üzeri)
+- **Windows:** Visual Studio 2019+ (C++ masaüstü geliştirme iş yükü)
+- **macOS:** Xcode
 
-### 1. Flutter SDK'yı yükleyin
+### Adımlar
+
 ```bash
-# Flutter'ı indirin ve PATH'e ekleyin
-# https://flutter.dev/docs/get-started/install
-```
+# 1. Repoyu klonla
+git clone https://github.com/kullanici_adi/ergo_reminder_v2.git
+cd ergo_reminder_v2
 
-### 2. Bağımlılıkları yükleyin
-```bash
+# 2. Bağımlılıkları yükle
 flutter pub get
+
+# 3. Platform desteğini etkinleştir (ilk kurulumda)
+flutter config --enable-windows-desktop   # Windows için
+flutter config --enable-macos-desktop     # macOS için
+
+# 4. Uygulamayı çalıştır
+flutter run -d windows    # Windows
+flutter run -d macos      # macOS
 ```
 
-### 3. Platform-specific ayarlar
+---
 
-#### Windows için:
+## 🏗️ Build (Release)
+
 ```bash
-# Visual Studio 2019 veya üzeri yüklü olmalı
-flutter config --enable-windows-desktop
-```
-
-#### macOS için:
-```bash
-# Xcode yüklü olmalı
-flutter config --enable-macos-desktop
-```
-
-### 4. Assets klasörünü oluşturun
-```bash
-mkdir assets
-# app_icon.ico (Windows için) ve app_icon.png (macOS için) dosyalarını ekleyin
-```
-
-### 5. Uygulamayı çalıştırın
-```bash
-# Windows için
-flutter run -d windows
-
-# macOS için
-flutter run -d macos
-```
-
-## Build
-
-### Windows için:
-```bash
+# Windows
 flutter build windows --release
-# Çıktı: build/windows/runner/Release/
-```
+# Çıktı: build/windows/x64/runner/Release/
 
-### macOS için:
-```bash
+# macOS
 flutter build macos --release
 # Çıktı: build/macos/Build/Products/Release/
 ```
 
-## Kullanım
+---
 
-1. **İlk Açılış**: Uygulama açıldığında otomatik olarak takip başlar
-2. **Sistem Tepsisi**: Pencereyi kap
+## 🗂️ Proje Yapısı
+
+```
+lib/
+├── main.dart           # Uygulama giriş noktası, pencere & başlatma ayarları
+├── home_page.dart      # Ana ekran — durum kartı, hatırlatıcı kartları, animasyonlar
+├── settings_page.dart  # Ayarlar ekranı — aralık, sessiz saatler, profil
+├── credits.dart        # "Designed by" easter egg widget'ı
+└── config.dart         # Merkezi yapılandırma (aralıklar, test modu)
+```
+
+---
+
+## 🛠️ Kullanılan Teknolojiler
+
+| Paket | Amaç |
+|---|---|
+| `flutter_local_notifications` | Yerel sistem bildirimleri (Windows & macOS) |
+| `tray_manager` | Sistem tepsisi entegrasyonu |
+| `window_manager` | Pencere kontrolü (boyut, gizle/göster, always on top) |
+| `launch_at_startup` | Sistem başlangıcında otomatik çalıştırma |
+| `shared_preferences` | Kullanıcı ayarlarını kaydetme |
+| `lottie` | Lottie JSON animasyonları |
+
+---
+
+## 💡 Kullanım
+
+1. **İlk Açılış:** Uygulama başladığında takip otomatik olarak başlar.
+2. **Sistem Tepsisi:** Pencereyi kapatınca uygulama arka planda çalışmaya devam eder. Tepsi simgesine tıklayarak pencereyi göster/gizle veya uygulamayı kapat.
+3. **Ayarlar:** Sağ üstteki ⚙️ simgesine veya tepsi menüsündeki "Ayarlar"a tıkla.
+4. **Hatırlatma Geldiğinde:** Açılan diyalogdan "Tamam, Yapıyorum" ile onayla veya "5 Dk Ertele" ile ertele.
+5. **Durdurma:** Ana ekrandaki "Durdur" butonuyla veya tepsi menüsünden takibi duraklat.
+
+---
+
+## 📄 Lisans
+
+Bu proje kişisel / eğitim amaçlı geliştirilmiştir.
+
+---
+
+<div align="center">
+  <i>Designed with ❤️ by Metehan DER</i>
+</div>
