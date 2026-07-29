@@ -79,9 +79,9 @@ flutter:
   # To add assets to your application, add an assets section, like this:
   assets:
     - assets/
+    - assets/animations/
     - assets/icons/app_logo.png
     - assets/icons/app_logo.ico
-    - assets/animations/fire.json
     - assets/fonts/Manrope-Regular.ttf
     - assets/fonts/Manrope-Medium.ttf
     - assets/fonts/Manrope-SemiBold.ttf

@@ -18,8 +18,9 @@ void main() async {
   await windowManager.ensureInitialized();
 
   const windowOptions = WindowOptions(
-    size: Size(1000, 680),
-    minimumSize: Size(850, 580),
+    size: Size(1200, 700),
+    minimumSize: Size(1000, 700),
+    maximumSize: Size(1400, 900),
     center: true,
     title: 'Ergonomik Asistan',
     skipTaskbar: false,

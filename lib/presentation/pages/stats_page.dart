@@ -118,6 +118,7 @@ class StatsPage extends ConsumerWidget {
                                 ),
                               ],
                             ),
+
                           ),
                           const SizedBox(height: 16),
                           Row(

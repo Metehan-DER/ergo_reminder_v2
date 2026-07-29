@@ -661,6 +661,216 @@ abstract class AppLocalizations {
   /// In tr, this message translates to:
   /// **'Günün Notu'**
   String get dailyQuoteTitle;
+
+  /// No description provided for @todoTitle.
+  ///
+  /// In tr, this message translates to:
+  /// **'Görev Listesi'**
+  String get todoTitle;
+
+  /// No description provided for @calendarTitle.
+  ///
+  /// In tr, this message translates to:
+  /// **'Takvim ve Ajanda'**
+  String get calendarTitle;
+
+  /// No description provided for @addTask.
+  ///
+  /// In tr, this message translates to:
+  /// **'Yeni Görev Ekle'**
+  String get addTask;
+
+  /// No description provided for @editTask.
+  ///
+  /// In tr, this message translates to:
+  /// **'Görevi Düzenle'**
+  String get editTask;
+
+  /// No description provided for @deleteTask.
+  ///
+  /// In tr, this message translates to:
+  /// **'Görevi Sil'**
+  String get deleteTask;
+
+  /// No description provided for @taskTitleHint.
+  ///
+  /// In tr, this message translates to:
+  /// **'Görev başlığı...'**
+  String get taskTitleHint;
+
+  /// No description provided for @taskDescHint.
+  ///
+  /// In tr, this message translates to:
+  /// **'Açıklama veya notlar (isteğe bağlı)...'**
+  String get taskDescHint;
+
+  /// No description provided for @priority.
+  ///
+  /// In tr, this message translates to:
+  /// **'Öncelik'**
+  String get priority;
+
+  /// No description provided for @priorityLow.
+  ///
+  /// In tr, this message translates to:
+  /// **'Düşük'**
+  String get priorityLow;
+
+  /// No description provided for @priorityMedium.
+  ///
+  /// In tr, this message translates to:
+  /// **'Orta'**
+  String get priorityMedium;
+
+  /// No description provided for @priorityHigh.
+  ///
+  /// In tr, this message translates to:
+  /// **'Yüksek'**
+  String get priorityHigh;
+
+  /// No description provided for @category.
+  ///
+  /// In tr, this message translates to:
+  /// **'Kategori'**
+  String get category;
+
+  /// No description provided for @categoryWork.
+  ///
+  /// In tr, this message translates to:
+  /// **'İş'**
+  String get categoryWork;
+
+  /// No description provided for @categoryHealth.
+  ///
+  /// In tr, this message translates to:
+  /// **'Sağlık'**
+  String get categoryHealth;
+
+  /// No description provided for @categoryErgo.
+  ///
+  /// In tr, this message translates to:
+  /// **'Ergonomi'**
+  String get categoryErgo;
+
+  /// No description provided for @categoryPersonal.
+  ///
+  /// In tr, this message translates to:
+  /// **'Kişisel'**
+  String get categoryPersonal;
+
+  /// No description provided for @dueDate.
+  ///
+  /// In tr, this message translates to:
+  /// **'Hedef Tarih'**
+  String get dueDate;
+
+  /// No description provided for @noDueDate.
+  ///
+  /// In tr, this message translates to:
+  /// **'Tarih Yok'**
+  String get noDueDate;
+
+  /// No description provided for @filterAll.
+  ///
+  /// In tr, this message translates to:
+  /// **'Tümü'**
+  String get filterAll;
+
+  /// No description provided for @filterToday.
+  ///
+  /// In tr, this message translates to:
+  /// **'Bugün'**
+  String get filterToday;
+
+  /// No description provided for @filterPending.
+  ///
+  /// In tr, this message translates to:
+  /// **'Bekleyenler'**
+  String get filterPending;
+
+  /// No description provided for @filterCompleted.
+  ///
+  /// In tr, this message translates to:
+  /// **'Tamamlananlar'**
+  String get filterCompleted;
+
+  /// No description provided for @noTasksFound.
+  ///
+  /// In tr, this message translates to:
+  /// **'Henüz kayıtlı bir görev bulunamadı.'**
+  String get noTasksFound;
+
+  /// No description provided for @searchTasks.
+  ///
+  /// In tr, this message translates to:
+  /// **'Görevlerde ara...'**
+  String get searchTasks;
+
+  /// No description provided for @save.
+  ///
+  /// In tr, this message translates to:
+  /// **'Kaydet'**
+  String get save;
+
+  /// No description provided for @todayTasksSummary.
+  ///
+  /// In tr, this message translates to:
+  /// **'Bugünün Görevleri'**
+  String get todayTasksSummary;
+
+  /// No description provided for @pendingTasksCount.
+  ///
+  /// In tr, this message translates to:
+  /// **'{count} Görev Bekliyor'**
+  String pendingTasksCount(int count);
+
+  /// No description provided for @calendarSelectDate.
+  ///
+  /// In tr, this message translates to:
+  /// **'Tarih Seçin'**
+  String get calendarSelectDate;
+
+  /// No description provided for @dailySummary.
+  ///
+  /// In tr, this message translates to:
+  /// **'Günlük Özet'**
+  String get dailySummary;
+
+  /// No description provided for @waterTrackerTitle.
+  ///
+  /// In tr, this message translates to:
+  /// **'Günlük Su Tüketimi'**
+  String get waterTrackerTitle;
+
+  /// No description provided for @addGlass.
+  ///
+  /// In tr, this message translates to:
+  /// **'+1 Bardak'**
+  String get addGlass;
+
+  /// No description provided for @removeGlass.
+  ///
+  /// In tr, this message translates to:
+  /// **'-1 Bardak'**
+  String get removeGlass;
+
+  /// No description provided for @waterGoal.
+  ///
+  /// In tr, this message translates to:
+  /// **'Hedef'**
+  String get waterGoal;
+
+  /// No description provided for @waterGoalReached.
+  ///
+  /// In tr, this message translates to:
+  /// **'Tebrikler! Günlük su hedefine ulaştınız! 💧'**
+  String get waterGoalReached;
+
+  /// No description provided for @selectWaterGoal.
+  ///
+  /// In tr, this message translates to:
+  /// **'Hedef Seçin'**
+  String get selectWaterGoal;
 }
 
 class _AppLocalizationsDelegate

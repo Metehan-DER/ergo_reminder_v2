@@ -143,9 +143,7 @@ class _SettingsPageState extends ConsumerState<SettingsPage> {
     "Bug Avcısı": "Bug Hunter",
     "Exception Fırlatıcısı": "Exception Thrower",
     "Stack Overflow Lordu": "Stack Overflow Lord",
-    "Yapay Zeka (Ama Duygulu)": "Sentient AI",
   };
-  final List<String> _genders = ["Belirtilmemiş", "Erkek", "Kadın"];
 
   final Map<String, Map<String, dynamic>> _reminderData = {
     'eyeRest': {
@@ -333,25 +331,6 @@ class _SettingsPageState extends ConsumerState<SettingsPage> {
                 .toList(),
             onChanged: (value) => setState(() => _selectedTitle = value!),
           ),
-          const SizedBox(height: 16),
-          DropdownButtonFormField<String>(
-            initialValue: _gender,
-            dropdownColor: const Color(0xFF2A2A45),
-            style: const TextStyle(color: Colors.white, fontWeight: FontWeight.w600),
-            decoration: _glassInputDecoration(label: _l10n.genderLabel, icon: Icons.wc),
-            items: _genders.map((g) {
-              String localizedG;
-              if (g == "Erkek") {
-                localizedG = _l10n.genderMale;
-              } else if (g == "Kadın") {
-                localizedG = _l10n.genderFemale;
-              } else {
-                localizedG = _l10n.genderUnspecified;
-              }
-              return DropdownMenuItem(value: g, child: Text(localizedG));
-            }).toList(),
-            onChanged: (value) => setState(() => _gender = value!),
-          ),
         ],
       ),
     );
@@ -463,7 +442,6 @@ class _SettingsPageState extends ConsumerState<SettingsPage> {
                             const SizedBox(height: 24),
                             DesignerCredits(
                               designerName: "Metehan DER",
-                              animationPath: 'assets/animations/fire.json',
                             ),
                             const SizedBox(height: 24),
                           ],
@@ -885,39 +863,6 @@ class _SettingsPageState extends ConsumerState<SettingsPage> {
                 child: Text(
                   _l10n.themeSection,
                   style: const TextStyle(fontSize: 16, fontWeight: FontWeight.bold, color: Colors.white),
-                ),
-              ),
-            ],
-          ),
-          const SizedBox(height: 16),
-          Text(
-            _l10n.themeModeLabel,
-            style: TextStyle(fontSize: 12, fontWeight: FontWeight.bold, color: Colors.white.withValues(alpha: 0.65)),
-          ),
-          const SizedBox(height: 8),
-          Row(
-            children: [
-              Expanded(
-                child: _buildChoiceChip(
-                  label: _l10n.themeSystem,
-                  selected: themeState.themeMode == ThemeMode.system,
-                  onTap: () => ref.read(themeProvider.notifier).setThemeMode(ThemeMode.system),
-                ),
-              ),
-              const SizedBox(width: 8),
-              Expanded(
-                child: _buildChoiceChip(
-                  label: _l10n.themeLight,
-                  selected: themeState.themeMode == ThemeMode.light,
-                  onTap: () => ref.read(themeProvider.notifier).setThemeMode(ThemeMode.light),
-                ),
-              ),
-              const SizedBox(width: 8),
-              Expanded(
-                child: _buildChoiceChip(
-                  label: _l10n.themeDark,
-                  selected: themeState.themeMode == ThemeMode.dark,
-                  onTap: () => ref.read(themeProvider.notifier).setThemeMode(ThemeMode.dark),
                 ),
               ),
             ],

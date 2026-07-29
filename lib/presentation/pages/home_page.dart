@@ -1,6 +1,7 @@
 import 'dart:ui';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:lottie/lottie.dart';
 
 import '../../l10n/app_localizations.dart';
 import '../../core/config/app_config.dart';
@@ -15,6 +16,10 @@ import '../providers/timer_provider.dart';
 
 import 'settings_page.dart';
 import 'stats_page.dart';
+import 'todo_page.dart';
+import 'calendar_page.dart';
+import '../widgets/todo_summary_card.dart';
+import '../widgets/water_tracker_card.dart';
 
 class HomePage extends ConsumerStatefulWidget {
   const HomePage({super.key});
@@ -90,6 +95,12 @@ class _HomePageState extends ConsumerState<HomePage>
     Navigator.of(
       context,
     ).push(MaterialPageRoute(builder: (context) => const StatsPage()));
+  }
+
+  void _openTodo() {
+    Navigator.of(
+      context,
+    ).push(MaterialPageRoute(builder: (context) => const TodoPage()));
   }
 
   void _changeColors() {
@@ -266,52 +277,68 @@ class _HomePageState extends ConsumerState<HomePage>
           appBar: AppBar(
             backgroundColor: Colors.transparent,
             elevation: 0,
-            title: Row(
+            title: Stack(
+              alignment: Alignment.centerLeft,
               children: [
-                const Text(
-                  'Ergonomik Asistan',
-                  style: TextStyle(
-                    fontWeight: FontWeight.bold,
-                    fontSize: 19,
-                    color: Colors.white,
+                Positioned.fill(
+                  child: IgnorePointer(
+                    child: Opacity(
+                      opacity: 0.35,
+                      child: Lottie.asset(
+                        'assets/animations/bg_waves.json',
+                        fit: BoxFit.cover,
+                      ),
+                    ),
                   ),
                 ),
-                const SizedBox(width: 12),
-                Container(
-                  padding: const EdgeInsets.symmetric(
-                    horizontal: 10,
-                    vertical: 4,
-                  ),
-                  decoration: BoxDecoration(
-                    color: (isRunning ? Colors.greenAccent : Colors.white30)
-                        .withValues(alpha: 0.25),
-                    borderRadius: BorderRadius.circular(12),
-                    border: Border.all(color: Colors.white24),
-                  ),
-                  child: Row(
-                    mainAxisSize: MainAxisSize.min,
-                    children: [
-                      Container(
-                        width: 8,
-                        height: 8,
-                        decoration: BoxDecoration(
-                          color: isRunning
-                              ? Colors.greenAccent
-                              : Colors.orangeAccent,
-                          shape: BoxShape.circle,
-                        ),
+                Row(
+                  children: [
+                    const Text(
+                      'Ergonomik Asistan',
+                      style: TextStyle(
+                        fontWeight: FontWeight.bold,
+                        fontSize: 19,
+                        color: Colors.white,
                       ),
-                      const SizedBox(width: 6),
-                      Text(
-                        isRunning ? _l10n.trayRunning : _l10n.trayStopped,
-                        style: const TextStyle(
-                          fontSize: 12,
-                          fontWeight: FontWeight.w600,
-                          color: Colors.white,
-                        ),
+                    ),
+                    const SizedBox(width: 12),
+                    Container(
+                      padding: const EdgeInsets.symmetric(
+                        horizontal: 10,
+                        vertical: 4,
                       ),
-                    ],
-                  ),
+                      decoration: BoxDecoration(
+                        color: (isRunning ? Colors.greenAccent : Colors.white30)
+                            .withValues(alpha: 0.25),
+                        borderRadius: BorderRadius.circular(12),
+                        border: Border.all(color: Colors.white24),
+                      ),
+                      child: Row(
+                        mainAxisSize: MainAxisSize.min,
+                        children: [
+                          Container(
+                            width: 8,
+                            height: 8,
+                            decoration: BoxDecoration(
+                              color: isRunning
+                                  ? Colors.greenAccent
+                                  : Colors.orangeAccent,
+                              shape: BoxShape.circle,
+                            ),
+                          ),
+                          const SizedBox(width: 6),
+                          Text(
+                            isRunning ? _l10n.trayRunning : _l10n.trayStopped,
+                            style: const TextStyle(
+                              fontSize: 12,
+                              fontWeight: FontWeight.w600,
+                              color: Colors.white,
+                            ),
+                          ),
+                        ],
+                      ),
+                    ),
+                  ],
                 ),
               ],
             ),
@@ -322,6 +349,11 @@ class _HomePageState extends ConsumerState<HomePage>
                   await ref.read(windowServiceProvider).hide();
                 },
                 tooltip: _l10n.tooltipHideToTray,
+              ),
+              IconButton(
+                icon: const Icon(Icons.check_box_outlined, color: Colors.white),
+                onPressed: _openTodo,
+                tooltip: _l10n.todoTitle,
               ),
               IconButton(
                 icon: const Icon(Icons.bar_chart_rounded, color: Colors.white),
@@ -354,7 +386,12 @@ class _HomePageState extends ConsumerState<HomePage>
             ),
             child: SafeArea(
               child: Padding(
-                padding: const EdgeInsets.all(24),
+                padding: const EdgeInsets.only(
+                  right: 24,
+                  left: 24,
+                  top: 24,
+                  bottom: 8,
+                ),
                 child: Row(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
@@ -379,6 +416,10 @@ class _HomePageState extends ConsumerState<HomePage>
                                 reminderIntervals: settings.reminderIntervals,
                                 timerState: timerState,
                               ),
+                              const SizedBox(height: 16),
+                              const WaterTrackerCard(),
+                              const SizedBox(height: 16),
+                              const TodoSummaryCard(),
                               const SizedBox(height: 16),
                             ],
                           ),
@@ -407,8 +448,7 @@ class _HomePageState extends ConsumerState<HomePage>
                               _buildSilentHoursCard(),
                               const SizedBox(height: 16),
                             ],
-                            _buildCompactTrayFooter(),
-                            const SizedBox(height: 16),
+                            CalendarPage(),
                           ],
                         ),
                       ),
@@ -560,9 +600,7 @@ class _HomePageState extends ConsumerState<HomePage>
                       ),
                     ),
                     style: ElevatedButton.styleFrom(
-                      backgroundColor: isRunning
-                          ? Colors.white
-                          : Colors.grey,
+                      backgroundColor: isRunning ? Colors.white : Colors.grey,
                       foregroundColor: isRunning
                           ? Colors.indigo.shade900
                           : Colors.white,
@@ -645,32 +683,6 @@ class _HomePageState extends ConsumerState<HomePage>
                   fontWeight: FontWeight.w600,
                   color: Colors.white70,
                 ),
-              ),
-            ),
-          ),
-        ],
-      ),
-    );
-  }
-
-  Widget _buildCompactTrayFooter() {
-    return Padding(
-      padding: const EdgeInsets.symmetric(horizontal: 4, vertical: 4),
-      child: Row(
-        children: [
-          Icon(
-            Icons.info_outline,
-            color: Colors.white.withValues(alpha: 0.6),
-            size: 14,
-          ),
-          const SizedBox(width: 8),
-          Expanded(
-            child: Text(
-              _l10n.infoTrayText,
-              style: TextStyle(
-                color: Colors.white.withValues(alpha: 0.6),
-                fontSize: 11,
-                height: 1.3,
               ),
             ),
           ),

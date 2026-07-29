@@ -297,4 +297,111 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get dailyQuoteTitle => 'Daily Quote';
+
+  @override
+  String get todoTitle => 'Todo List';
+
+  @override
+  String get calendarTitle => 'Calendar & Agenda';
+
+  @override
+  String get addTask => 'Add New Task';
+
+  @override
+  String get editTask => 'Edit Task';
+
+  @override
+  String get deleteTask => 'Delete Task';
+
+  @override
+  String get taskTitleHint => 'Task title...';
+
+  @override
+  String get taskDescHint => 'Description or notes (optional)...';
+
+  @override
+  String get priority => 'Priority';
+
+  @override
+  String get priorityLow => 'Low';
+
+  @override
+  String get priorityMedium => 'Medium';
+
+  @override
+  String get priorityHigh => 'High';
+
+  @override
+  String get category => 'Category';
+
+  @override
+  String get categoryWork => 'Work';
+
+  @override
+  String get categoryHealth => 'Health';
+
+  @override
+  String get categoryErgo => 'Ergonomics';
+
+  @override
+  String get categoryPersonal => 'Personal';
+
+  @override
+  String get dueDate => 'Due Date';
+
+  @override
+  String get noDueDate => 'No Due Date';
+
+  @override
+  String get filterAll => 'All';
+
+  @override
+  String get filterToday => 'Today';
+
+  @override
+  String get filterPending => 'Pending';
+
+  @override
+  String get filterCompleted => 'Completed';
+
+  @override
+  String get noTasksFound => 'No tasks found.';
+
+  @override
+  String get searchTasks => 'Search tasks...';
+
+  @override
+  String get save => 'Save';
+
+  @override
+  String get todayTasksSummary => 'Today\'s Tasks';
+
+  @override
+  String pendingTasksCount(int count) {
+    return '$count Tasks Pending';
+  }
+
+  @override
+  String get calendarSelectDate => 'Select Date';
+
+  @override
+  String get dailySummary => 'Daily Summary';
+
+  @override
+  String get waterTrackerTitle => 'Daily Water Intake';
+
+  @override
+  String get addGlass => '+1 Glass';
+
+  @override
+  String get removeGlass => '-1 Glass';
+
+  @override
+  String get waterGoal => 'Goal';
+
+  @override
+  String get waterGoalReached => 'Awesome! Daily hydration goal reached! 💧';
+
+  @override
+  String get selectWaterGoal => 'Select Goal';
 }

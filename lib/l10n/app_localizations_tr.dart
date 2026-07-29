@@ -298,4 +298,111 @@ class AppLocalizationsTr extends AppLocalizations {
 
   @override
   String get dailyQuoteTitle => 'Günün Notu';
+
+  @override
+  String get todoTitle => 'Görev Listesi';
+
+  @override
+  String get calendarTitle => 'Takvim ve Ajanda';
+
+  @override
+  String get addTask => 'Yeni Görev Ekle';
+
+  @override
+  String get editTask => 'Görevi Düzenle';
+
+  @override
+  String get deleteTask => 'Görevi Sil';
+
+  @override
+  String get taskTitleHint => 'Görev başlığı...';
+
+  @override
+  String get taskDescHint => 'Açıklama veya notlar (isteğe bağlı)...';
+
+  @override
+  String get priority => 'Öncelik';
+
+  @override
+  String get priorityLow => 'Düşük';
+
+  @override
+  String get priorityMedium => 'Orta';
+
+  @override
+  String get priorityHigh => 'Yüksek';
+
+  @override
+  String get category => 'Kategori';
+
+  @override
+  String get categoryWork => 'İş';
+
+  @override
+  String get categoryHealth => 'Sağlık';
+
+  @override
+  String get categoryErgo => 'Ergonomi';
+
+  @override
+  String get categoryPersonal => 'Kişisel';
+
+  @override
+  String get dueDate => 'Hedef Tarih';
+
+  @override
+  String get noDueDate => 'Tarih Yok';
+
+  @override
+  String get filterAll => 'Tümü';
+
+  @override
+  String get filterToday => 'Bugün';
+
+  @override
+  String get filterPending => 'Bekleyenler';
+
+  @override
+  String get filterCompleted => 'Tamamlananlar';
+
+  @override
+  String get noTasksFound => 'Henüz kayıtlı bir görev bulunamadı.';
+
+  @override
+  String get searchTasks => 'Görevlerde ara...';
+
+  @override
+  String get save => 'Kaydet';
+
+  @override
+  String get todayTasksSummary => 'Bugünün Görevleri';
+
+  @override
+  String pendingTasksCount(int count) {
+    return '$count Görev Bekliyor';
+  }
+
+  @override
+  String get calendarSelectDate => 'Tarih Seçin';
+
+  @override
+  String get dailySummary => 'Günlük Özet';
+
+  @override
+  String get waterTrackerTitle => 'Günlük Su Tüketimi';
+
+  @override
+  String get addGlass => '+1 Bardak';
+
+  @override
+  String get removeGlass => '-1 Bardak';
+
+  @override
+  String get waterGoal => 'Hedef';
+
+  @override
+  String get waterGoalReached => 'Tebrikler! Günlük su hedefine ulaştınız! 💧';
+
+  @override
+  String get selectWaterGoal => 'Hedef Seçin';
 }
