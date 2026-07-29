@@ -6,7 +6,7 @@ class WindowService {
     await windowManager.setPreventClose(true);
     await windowManager.setSkipTaskbar(false);
     await windowManager.setTitle('Ergonomik Asistan');
-    await windowManager.setMinimumSize(const Size(500, 850));
+    await windowManager.setMinimumSize(const Size(850, 580));
   }
 
   Future<void> show() async {

@@ -242,8 +242,59 @@ class AppLocalizationsEn extends AppLocalizations {
   String get settingsSaved => 'Settings saved successfully';
 
   @override
-  String get languageSection => 'Dil / Language';
+  String get languageSection => 'Language / Dil';
+
+  @override
+  String get langTurkish => 'Turkish 🇹🇷';
+
+  @override
+  String get langEnglish => 'English 🇬🇧';
+
+  @override
+  String get statisticsTitle => 'Statistics & Analytics';
+
+  @override
+  String get todayCompleted => 'Completed';
+
+  @override
+  String get todaySnoozed => 'Snoozed';
+
+  @override
+  String get todayIgnored => 'Ignored';
+
+  @override
+  String get totalReminders => 'Total Actions';
+
+  @override
+  String get successRate => 'Success Rate';
+
+  @override
+  String get viewStats => 'Detailed Statistics';
+
+  @override
+  String get breakdownTitle => 'Reminder Breakdown';
+
+  @override
+  String get themeSection => 'Theme & Appearance';
+
+  @override
+  String get themeModeLabel => 'Interface Mode';
+
+  @override
+  String get themeLight => 'Light';
+
+  @override
+  String get themeDark => 'Dark';
+
+  @override
+  String get themeSystem => 'System';
+
+  @override
+  String get themePaletteLabel => 'Color Palette';
 
   @override
   String get testModePrefix => 'Test:';
+
+  @override
+  String get dailyQuoteTitle => 'Daily Quote';
 }

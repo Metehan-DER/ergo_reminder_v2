@@ -87,5 +87,22 @@
   "saveSettings": "Ayarları Kaydet",
   "settingsSaved": "Ayarlar başarıyla kaydedildi",
   "languageSection": "Dil / Language",
-  "testModePrefix": "Test:"
+  "langTurkish": "Türkçe 🇹🇷",
+  "langEnglish": "English 🇬🇧",
+  "statisticsTitle": "İstatistikler & Analiz",
+  "todayCompleted": "Tamamlanan",
+  "todaySnoozed": "Ertelenen",
+  "todayIgnored": "Atlanan",
+  "totalReminders": "Toplam İşlem",
+  "successRate": "Başarı Oranı",
+  "viewStats": "Detaylı İstatistikler",
+  "breakdownTitle": "Hatırlatıcı Dağılımı",
+  "themeSection": "Tema & Görünüm",
+  "themeModeLabel": "Arayüz Modu",
+  "themeLight": "Açık",
+  "themeDark": "Karanlık",
+  "themeSystem": "Sistem",
+  "themePaletteLabel": "Renk Paleti",
+  "testModePrefix": "Test:",
+  "dailyQuoteTitle": "Günün Notu"
 }

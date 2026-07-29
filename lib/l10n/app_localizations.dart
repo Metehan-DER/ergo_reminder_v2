@@ -554,11 +554,113 @@ abstract class AppLocalizations {
   /// **'Dil / Language'**
   String get languageSection;
 
+  /// No description provided for @langTurkish.
+  ///
+  /// In tr, this message translates to:
+  /// **'Türkçe 🇹🇷'**
+  String get langTurkish;
+
+  /// No description provided for @langEnglish.
+  ///
+  /// In tr, this message translates to:
+  /// **'English 🇬🇧'**
+  String get langEnglish;
+
+  /// No description provided for @statisticsTitle.
+  ///
+  /// In tr, this message translates to:
+  /// **'İstatistikler & Analiz'**
+  String get statisticsTitle;
+
+  /// No description provided for @todayCompleted.
+  ///
+  /// In tr, this message translates to:
+  /// **'Tamamlanan'**
+  String get todayCompleted;
+
+  /// No description provided for @todaySnoozed.
+  ///
+  /// In tr, this message translates to:
+  /// **'Ertelenen'**
+  String get todaySnoozed;
+
+  /// No description provided for @todayIgnored.
+  ///
+  /// In tr, this message translates to:
+  /// **'Atlanan'**
+  String get todayIgnored;
+
+  /// No description provided for @totalReminders.
+  ///
+  /// In tr, this message translates to:
+  /// **'Toplam İşlem'**
+  String get totalReminders;
+
+  /// No description provided for @successRate.
+  ///
+  /// In tr, this message translates to:
+  /// **'Başarı Oranı'**
+  String get successRate;
+
+  /// No description provided for @viewStats.
+  ///
+  /// In tr, this message translates to:
+  /// **'Detaylı İstatistikler'**
+  String get viewStats;
+
+  /// No description provided for @breakdownTitle.
+  ///
+  /// In tr, this message translates to:
+  /// **'Hatırlatıcı Dağılımı'**
+  String get breakdownTitle;
+
+  /// No description provided for @themeSection.
+  ///
+  /// In tr, this message translates to:
+  /// **'Tema & Görünüm'**
+  String get themeSection;
+
+  /// No description provided for @themeModeLabel.
+  ///
+  /// In tr, this message translates to:
+  /// **'Arayüz Modu'**
+  String get themeModeLabel;
+
+  /// No description provided for @themeLight.
+  ///
+  /// In tr, this message translates to:
+  /// **'Açık'**
+  String get themeLight;
+
+  /// No description provided for @themeDark.
+  ///
+  /// In tr, this message translates to:
+  /// **'Karanlık'**
+  String get themeDark;
+
+  /// No description provided for @themeSystem.
+  ///
+  /// In tr, this message translates to:
+  /// **'Sistem'**
+  String get themeSystem;
+
+  /// No description provided for @themePaletteLabel.
+  ///
+  /// In tr, this message translates to:
+  /// **'Renk Paleti'**
+  String get themePaletteLabel;
+
   /// No description provided for @testModePrefix.
   ///
   /// In tr, this message translates to:
   /// **'Test:'**
   String get testModePrefix;
+
+  /// No description provided for @dailyQuoteTitle.
+  ///
+  /// In tr, this message translates to:
+  /// **'Günün Notu'**
+  String get dailyQuoteTitle;
 }
 
 class _AppLocalizationsDelegate

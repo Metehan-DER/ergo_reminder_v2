@@ -246,5 +246,56 @@ class AppLocalizationsTr extends AppLocalizations {
   String get languageSection => 'Dil / Language';
 
   @override
+  String get langTurkish => 'Türkçe 🇹🇷';
+
+  @override
+  String get langEnglish => 'English 🇬🇧';
+
+  @override
+  String get statisticsTitle => 'İstatistikler & Analiz';
+
+  @override
+  String get todayCompleted => 'Tamamlanan';
+
+  @override
+  String get todaySnoozed => 'Ertelenen';
+
+  @override
+  String get todayIgnored => 'Atlanan';
+
+  @override
+  String get totalReminders => 'Toplam İşlem';
+
+  @override
+  String get successRate => 'Başarı Oranı';
+
+  @override
+  String get viewStats => 'Detaylı İstatistikler';
+
+  @override
+  String get breakdownTitle => 'Hatırlatıcı Dağılımı';
+
+  @override
+  String get themeSection => 'Tema & Görünüm';
+
+  @override
+  String get themeModeLabel => 'Arayüz Modu';
+
+  @override
+  String get themeLight => 'Açık';
+
+  @override
+  String get themeDark => 'Karanlık';
+
+  @override
+  String get themeSystem => 'Sistem';
+
+  @override
+  String get themePaletteLabel => 'Renk Paleti';
+
+  @override
   String get testModePrefix => 'Test:';
+
+  @override
+  String get dailyQuoteTitle => 'Günün Notu';
 }
