@@ -9,7 +9,7 @@ class AppLocalizationsEn extends AppLocalizations {
   AppLocalizationsEn([String locale = 'en']) : super(locale);
 
   @override
-  String get appTitle => 'Ergonomic Assistant';
+  String get appTitle => 'ErgoMate';
 
   @override
   String get statusHealthy => 'Your Health is Protected';
@@ -84,8 +84,7 @@ class AppLocalizationsEn extends AppLocalizations {
   String get exitTitle => 'Quit Application';
 
   @override
-  String get exitContent =>
-      'Do you want to completely quit Ergonomic Assistant?';
+  String get exitContent => 'Do you want to completely quit ErgoMate?';
 
   @override
   String get cancel => 'Cancel';
@@ -404,4 +403,33 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get selectWaterGoal => 'Select Goal';
+
+  @override
+  String get onboardingWelcomeTitle => 'Welcome to ErgoMate!';
+
+  @override
+  String get onboardingWelcomeDesc =>
+      'Designed to protect your health and boost your productivity while working at your desktop. Smart reminders, water tracking, and calendar agenda by your side all day.';
+
+  @override
+  String get onboardingFeaturesTitle => 'All Health & Productivity Tools';
+
+  @override
+  String get onboardingFeaturesDesc =>
+      'Eye rest (20-20-20), posture check, live water tracker, task management, and personal calendar in one cockpit.';
+
+  @override
+  String get onboardingProfileTitle => 'Let\'s Get to Know You!';
+
+  @override
+  String get onboardingProfileDesc => 'How would you like us to address you?';
+
+  @override
+  String get onboardingNameHint => 'Your name (e.g. Alex)...';
+
+  @override
+  String get onboardingTitleLabel => 'Honorific Title:';
+
+  @override
+  String get onboardingStartBtn => 'Get Started 🚀';
 }

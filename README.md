@@ -1,69 +1,79 @@
-# 🧘 Ergonomik Asistan
+# 🧘 ErgoMate
 
-> Ofis çalışanları için masaüstü ergonomi takip uygulaması. Flutter ile geliştirilmiş, Windows ve macOS üzerinde çalışır.
+> **Ofis ve masaüstü çalışanları için akıllı sağlık, mola ve verimlilik asistanı.**  
+> Flutter ile geliştirilmiştir; Windows ve macOS üzerinde son derece akıcı, modern ve kişiselleştirilebilir bir deneyim sunar.
 
 ---
 
-## ✨ Özellikler
+## 🚀 Doğrudan İndir (Hızlı Kurulum)
 
-### 🔔 Akıllı Hatırlatıcılar
+Geliştirme ortamı kurmakla uğraşmak istemiyorsanız, işletim sisteminize uygun hazır sürümleri tek tıkla indirebilirsiniz:
+
+| İşletim Sistemi | Sürüm | Doğrudan İndirme Linki |
+|---|---|---|
+| 🪟 **Windows** | v2.0.0 (64-bit) | [📥 Windows İndir (.zip / .exe)](https://github.com/Metehan-DER/ergo_reminder_v2/releases/latest/download/ErgoMate-Windows.zip) |
+| 🍎 **macOS** | v2.0.0 (Universal) | [📥 macOS İndir (.dmg / .app)](https://github.com/Metehan-DER/ergo_reminder_v2/releases/latest/download/ErgoMate-macOS.dmg) |
+
+> 💡 *Sürümleri ayrıca GitHub üzerindeki [Releases](https://github.com/Metehan-DER/ergo_reminder_v2/releases) sayfasından da takip edebilirsiniz.*
+
+---
+
+## ✨ Öne Çıkan Özellikler
+
+### 🔔 1. Akıllı Sağlık & Ergonomi Hatırlatıcıları
 | Hatırlatıcı | Varsayılan Aralık | Açıklama |
 |---|---|---|
-| 👁️ Göz Dinlendirme | 40 dakika | 20-20-20 kuralı — uzağa bak, gözlerini dinlendir |
-| 🧍 Duruş Kontrolü | 30 dakika | Sırtını dik tut, omuzlarını rahatlatı |
-| 💧 Su İçme | 60 dakika | Hidrasyon takibi |
-| 🤸 Esneme | 50 dakika | Kas gerginliğini gider |
-| 🚶 Yürüyüş Molası | 120 dakika | Kan dolaşımını artır |
-
-### ⚙️ Diğer Özellikler
-- 🔕 **Sessiz Saatler** — belirli saatler arasında bildirimleri sustur (varsayılan: 22:00–08:00)
-- 🚀 **Otomatik Başlatma** — sistem başlangıcında arka planda çal
-- 🎨 **Kişiselleştirme** — isim, unvan ve cinsiyete göre kişisel selamlama
-- 🖥️ **Sistem Tepsisi** — pencereyi kapatınca arka planda çalışmaya devam eder
-- ⏸️ **Durdur / Başlat** — takibi tek tuşla duraklat
-- 🌈 **Glassmorphism UI** — animasyonlu, renk değiştirebilen modern arayüz
+| 👁️ **Göz Dinlendirme** | 40 dakika | 20-20-20 kuralı — uzağa bak ve göz kaslarını dinlendir |
+| 🧍 **Duruş Kontrolü** | 30 dakika | Oturma pozisyonunu ve sırt doğruluğunu kontrol et |
+| 💧 **Su İçme** | 60 dakika | Düzenli hidrasyon hatırlatıcısı |
+| 🤸 **Esneme Molası** | 50 dakika | Omuz ve boyun kas gerginliğini gider |
+| 🚶 **Yürüyüş Molası** | 120 dakika | Kan dolaşımını canlandırmak için hareket et |
 
 ---
 
-## 📦 Kurulum
-
-### Gereksinimler
-- [Flutter SDK](https://flutter.dev/docs/get-started/install) (3.x veya üzeri)
-- **Windows:** Visual Studio 2019+ (C++ masaüstü geliştirme iş yükü)
-- **macOS:** Xcode
-
-### Adımlar
-
-```bash
-# 1. Repoyu klonla
-git clone https://github.com/kullanici_adi/ergo_reminder_v2.git
-cd ergo_reminder_v2
-
-# 2. Bağımlılıkları yükle
-flutter pub get
-
-# 3. Platform desteğini etkinleştir (ilk kurulumda)
-flutter config --enable-windows-desktop   # Windows için
-flutter config --enable-macos-desktop     # macOS için
-
-# 4. Uygulamayı çalıştır
-flutter run -d windows    # Windows
-flutter run -d macos      # macOS
-```
+### 💧 2. Canlı Animasyonlu Su Takipçisi (Water Tracker)
+- **Fiziksel Sıvı Dalgalanması:** `CustomPainter` ve `AnimationController` ile bardağın içindeki suyun canlı ve akıcı sinüs dalgaları (`sin wave`) ile sürekli hareket etmesi.
+- **Tek Tıkla Tüketim Ekleme:** `+1 Bardak (+250 ml)` ve `-1 Bardak` hızlı eylemleri.
+- **Kişiselleştirilebilir Günlük Hedef:** Tıklandığında 1.5L, 2.0L, 2.5L, 3.0L veya 3.5L hedef seçimi.
 
 ---
 
-## 🏗️ Build (Release)
+### 📝 3. Görev Listesi & Verimlilik (Todo List)
+- **Öncelik & Kategori Yönetimi:** Görevleri *Yüksek, Orta, Düşük* öncelik ve *İş, Sağlık, Ergonomi, Kişisel* kategorileriyle organize etme.
+- **Filtreleme & Arama:** Metin ile canlı arama; *Tümü, Bugün, Bekleyenler, Tamamlananlar* sekmeleri.
+- **Şık Modal Form:** Aşağıdan yumuşak bir animasyonla açılan (Modal Bottom Sheet) hızlı görev ekleme ekranı.
+- **Ana Sayfa İlerleme Kartı:** Günlük tamamlanan görev oranını canlı dairesel halka (`CircularProgressIndicator`) ile izleme.
 
-```bash
-# Windows
-flutter build windows --release
-# Çıktı: build/windows/x64/runner/Release/
+---
 
-# macOS
-flutter build macos --release
-# Çıktı: build/macos/Build/Products/Release/
-```
+### 📅 4. Takvim ve Günlük Ajanda (Calendar View)
+- **Buzlu Cam Izgara (Glassmorphism Grid):** Ana sayfa sağ paneline gömülü özel ay/gün takvimi.
+- **Günlük Analiz & Mola Özeti:** Seçilen güne tıklayarak o günün mola istatistiklerini ve planlanan görevlerini görüntüleme.
+- **Öncelikli Görev Noktaları:** Tarihlerin altında görev durumuna göre renkli gösterge noktaları.
+
+---
+
+### 🎬 5. Premium Arayüz & Akıcı Geçişler
+- **Glassmorphic 2.0 Tasarımı:** İnce renkli gradyan kenarlıklar, canlı kontrastlar ve bulanıklaştırılmış arka planlar.
+- **Derinlikli Sayfa Geçişleri (Scale + Fade + Slide):** Apple ve Material 3 standartlarında akıcı derinlik animasyonları.
+- **Çoklu Renk Paletleri & Tema:** Aydınlık/Karanlık mod ve 5+ canlı renk teması.
+- **Çoklu Dil Desteği:** Türkçe 🇹🇷 ve İngilizce 🇬🇧 yerel dil seçeneği.
+
+---
+
+### 🖥️ 6. Sistem & Masaüstü Entegrasyonu
+- **Sistem Tepsisi (System Tray):** Pencere kapatıldığında arka planda sessizce çalışmaya devam etme.
+- **Otomatik Başlatma:** Bilgisayar açıldığında otomatik çalışma seçeneği (`launch_at_startup`).
+- **Masaüstü Bildirimleri:** Windows ve macOS yerel bildirim desteği.
+
+---
+
+## 🛠️ Kullanılan Teknolojiler & Mimarisi
+
+- **Framework:** Flutter 3.x (Dart)
+- **State Management:** Riverpod 3.x (`NotifierProvider`, `StateNotifier`)
+- **Mimari:** Clean Architecture (Domain, Data, Presentation, Core)
+- **Paketler:** `flutter_local_notifications`, `tray_manager`, `window_manager`, `launch_at_startup`, `shared_preferences`, `google_fonts`
 
 ---
 
@@ -71,44 +81,42 @@ flutter build macos --release
 
 ```
 lib/
-├── main.dart           # Uygulama giriş noktası, pencere & başlatma ayarları
-├── home_page.dart      # Ana ekran — durum kartı, hatırlatıcı kartları, animasyonlar
-├── settings_page.dart  # Ayarlar ekranı — aralık, sessiz saatler, profil
-├── credits.dart        # "Designed by" easter egg widget'ı
-└── config.dart         # Merkezi yapılandırma (aralıklar, test modu)
+├── core/
+│   ├── services/       # Storage, Notification & Window servisleri
+│   └── utils/          # Premium sayfa geçiş animasyonları (AppPageRoute)
+├── data/
+│   └── repositories/   # StorageService tabanlı veri depoları
+├── domain/
+│   ├── entities/       # Todo, WaterLog, Settings, Stats modelleri
+│   └── repositories/   # Soyut repository arayüzleri
+├── l10n/               # Türkçe ve İngilizce dil dosyaları (app_tr.arb, app_en.arb)
+└── presentation/
+    ├── pages/          # Home, Settings, Stats, Todo, Calendar sayfaları
+    ├── providers/      # Riverpod durum ve servis sağlayıcıları
+    └── widgets/        # WaterTracker, TodoSummaryCard, AnimatedWaterCup
 ```
 
 ---
 
-## 🛠️ Kullanılan Teknolojiler
+## 💻 Kaynak Koddan Çalıştırma (Geliştiriciler İçin)
 
-| Paket | Amaç |
-|---|---|
-| `flutter_local_notifications` | Yerel sistem bildirimleri (Windows & macOS) |
-| `tray_manager` | Sistem tepsisi entegrasyonu |
-| `window_manager` | Pencere kontrolü (boyut, gizle/göster, always on top) |
-| `launch_at_startup` | Sistem başlangıcında otomatik çalıştırma |
-| `shared_preferences` | Kullanıcı ayarlarını kaydetme |
-| `lottie` | Lottie JSON animasyonları |
+Proje kaynak kodunu yerel ortamınızda derlemek isterseniz:
 
----
+```bash
+# 1. Repoyu klonlayın
+git clone https://github.com/Metehan-DER/ergo_reminder_v2.git
+cd ergo_reminder_v2
 
-## 💡 Kullanım
+# 2. Bağımlılıkları yükleyin
+flutter pub get
 
-1. **İlk Açılış:** Uygulama başladığında takip otomatik olarak başlar.
-2. **Sistem Tepsisi:** Pencereyi kapatınca uygulama arka planda çalışmaya devam eder. Tepsi simgesine tıklayarak pencereyi göster/gizle veya uygulamayı kapat.
-3. **Ayarlar:** Sağ üstteki ⚙️ simgesine veya tepsi menüsündeki "Ayarlar"a tıkla.
-4. **Hatırlatma Geldiğinde:** Açılan diyalogdan "Tamam, Yapıyorum" ile onayla veya "5 Dk Ertele" ile ertele.
-5. **Durdurma:** Ana ekrandaki "Durdur" butonuyla veya tepsi menüsünden takibi duraklat.
-
----
-
-## 📄 Lisans
-
-Bu proje kişisel / eğitim amaçlı geliştirilmiştir.
+# 3. Derleyin ve çalıştırın
+flutter run -d windows   # Windows için
+flutter run -d macos     # macOS için
+```
 
 ---
 
 <div align="center">
-  <i>Designed with ❤️ by Metehan DER</i>
+  <i>Designed & Developed with ❤️ by <b>Metehan DER</b></i>
 </div>

@@ -3,6 +3,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import '../../l10n/app_localizations.dart';
+import '../../core/utils/page_transitions.dart';
 import '../pages/todo_page.dart';
 import '../providers/todo_provider.dart';
 
@@ -114,9 +115,7 @@ class TodoSummaryCard extends ConsumerWidget {
                         onTap: () {
                           Navigator.push(
                             context,
-                            MaterialPageRoute(
-                              builder: (context) => const TodoPage(),
-                            ),
+                            AppPageRoute(child: const TodoPage()),
                           );
                         },
                       ),

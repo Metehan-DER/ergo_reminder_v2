@@ -28,7 +28,10 @@ class StatsPage extends ConsumerWidget {
         ),
         title: Text(
           l10n.statisticsTitle,
-          style: const TextStyle(fontWeight: FontWeight.bold, color: Colors.white),
+          style: const TextStyle(
+            fontWeight: FontWeight.bold,
+            color: Colors.white,
+          ),
         ),
       ),
       body: AnimatedContainer(
@@ -43,13 +46,20 @@ class StatsPage extends ConsumerWidget {
         ),
         child: SafeArea(
           child: statsAsync.when(
-            loading: () => const Center(child: CircularProgressIndicator(color: Colors.white)),
+            loading: () => const Center(
+              child: CircularProgressIndicator(color: Colors.white),
+            ),
             error: (err, stack) => Center(
-              child: Text('Hata: $err', style: const TextStyle(color: Colors.white)),
+              child: Text(
+                'Hata: $err',
+                style: const TextStyle(color: Colors.white),
+              ),
             ),
             data: (stats) {
               final total = stats.completed + stats.snoozed + stats.ignored;
-              final rate = total > 0 ? (stats.completed / total * 100).round() : 0;
+              final rate = total > 0
+                  ? (stats.completed / total * 100).round()
+                  : 0;
 
               return SingleChildScrollView(
                 physics: const BouncingScrollPhysics(),
@@ -73,10 +83,16 @@ class StatsPage extends ConsumerWidget {
                                       width: 90,
                                       height: 90,
                                       child: CircularProgressIndicator(
-                                        value: total > 0 ? stats.completed / total : 0.0,
+                                        value: total > 0
+                                            ? stats.completed / total
+                                            : 0.0,
                                         strokeWidth: 9,
-                                        backgroundColor: Colors.white.withValues(alpha: 0.2),
-                                        valueColor: const AlwaysStoppedAnimation<Color>(Colors.greenAccent),
+                                        backgroundColor: Colors.white
+                                            .withValues(alpha: 0.2),
+                                        valueColor:
+                                            const AlwaysStoppedAnimation<Color>(
+                                              Colors.greenAccent,
+                                            ),
                                       ),
                                     ),
                                     Text(
@@ -92,7 +108,8 @@ class StatsPage extends ConsumerWidget {
                                 const SizedBox(width: 20),
                                 Expanded(
                                   child: Column(
-                                    crossAxisAlignment: CrossAxisAlignment.start,
+                                    crossAxisAlignment:
+                                        CrossAxisAlignment.start,
                                     children: [
                                       Text(
                                         l10n.successRate,
@@ -118,7 +135,6 @@ class StatsPage extends ConsumerWidget {
                                 ),
                               ],
                             ),
-
                           ),
                           const SizedBox(height: 16),
                           Row(
@@ -174,7 +190,11 @@ class StatsPage extends ConsumerWidget {
                       child: Column(
                         children: [
                           settingsAsync.when(
-                            data: (settings) => _buildBreakdownSection(context, l10n, settings.enabledReminders),
+                            data: (settings) => _buildBreakdownSection(
+                              context,
+                              l10n,
+                              settings.enabledReminders,
+                            ),
                             loading: () => const SizedBox.shrink(),
                             error: (err, stack) => const SizedBox.shrink(),
                           ),
@@ -305,14 +325,19 @@ class StatsPage extends ConsumerWidget {
                     ),
                   ),
                   Container(
-                    padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
+                    padding: const EdgeInsets.symmetric(
+                      horizontal: 12,
+                      vertical: 6,
+                    ),
                     decoration: BoxDecoration(
                       color: isEnabled
                           ? Colors.white.withValues(alpha: 0.25)
                           : Colors.white.withValues(alpha: 0.08),
                       borderRadius: BorderRadius.circular(12),
                       border: Border.all(
-                        color: isEnabled ? Colors.white.withValues(alpha: 0.3) : Colors.white12,
+                        color: isEnabled
+                            ? Colors.white.withValues(alpha: 0.3)
+                            : Colors.white12,
                       ),
                     ),
                     child: Text(
@@ -346,7 +371,10 @@ class StatsPage extends ConsumerWidget {
             Colors.white.withValues(alpha: 0.1),
           ],
         ),
-        border: Border.all(color: Colors.white.withValues(alpha: 0.2), width: 1.5),
+        border: Border.all(
+          color: Colors.white.withValues(alpha: 0.2),
+          width: 1.5,
+        ),
         boxShadow: [
           BoxShadow(
             color: Colors.black.withValues(alpha: 0.1),

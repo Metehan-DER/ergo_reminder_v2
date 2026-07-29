@@ -12,16 +12,14 @@ class ThemeState {
     // 1. Okyanus Esintisi (Teal, Cyan & Blue)
     [Color(0xFF00695C), Color(0xFF00897B), Color(0xFF0288D1)],
     // 2. Gece Şafağı (Deep Indigo & Periwinkle) — tonlar arası fark büyütüldü,
-    // önceki sürümde üç durak da birbirine çok yakındı ve düz bir leke gibi görünüyordu.
     [Color(0xFF283593), Color(0xFF3949AB), Color(0xFF5C6BC0)],
-    // 3. Gün Batımı (Rose & Warm Amber)
-    [Color(0xFFD81B60), Color(0xFFE53935), Color(0xFFFB8C00)],
+    // 3. Gün Batımı (Muted Rose, Terracotta & Amber)
+    [Color(0xFF7B3652), Color(0xFFA64B3C), Color(0xFFC47732)],
     // 4. Zümrüt Ormanı (Deep Green & Mint)
     [Color(0xFF1B5E20), Color(0xFF2E7D32), Color(0xFF00897B)],
     // 5. Kehribar Işıltısı (Deep Bronze & Warm Gold)
     [Color(0xFF4E342E), Color(0xFFD84315), Color(0xFFFF8F00)],
     // 6. Sis (Slate & Cool Gray) — düşük doygunluklu, sakin seçenek;
-    // uygulamanın göz dinlendirme/ergonomi temasıyla daha tutarlı bir alternatif.
     [Color(0xFF37474F), Color(0xFF546E7A), Color(0xFF78909C)],
   ];
 
@@ -47,10 +45,7 @@ class ThemeState {
     'Fog',
   ];
 
-  const ThemeState({
-    this.themeMode = ThemeMode.system,
-    this.paletteIndex = 0,
-  });
+  const ThemeState({this.themeMode = ThemeMode.system, this.paletteIndex = 0});
 
   List<Color> get activeGradientColors {
     return palettes[paletteIndex % palettes.length];
@@ -83,10 +78,7 @@ class ThemeState {
   ThemeData get lightThemeData => buildThemeData(Brightness.light);
   ThemeData get darkThemeData => buildThemeData(Brightness.dark);
 
-  ThemeState copyWith({
-    ThemeMode? themeMode,
-    int? paletteIndex,
-  }) {
+  ThemeState copyWith({ThemeMode? themeMode, int? paletteIndex}) {
     return ThemeState(
       themeMode: themeMode ?? this.themeMode,
       paletteIndex: paletteIndex ?? this.paletteIndex,

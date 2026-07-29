@@ -35,12 +35,18 @@ class _SettingsPageState extends ConsumerState<SettingsPage> {
   final List<String> _titles = [
     "Yok",
 
-    // Samimi
+    // Samimi & Geleneksel
+    "Bey",
+    "Hanım",
     "Dostum",
     "Kanka",
     "Abi",
     "Reis",
     "Patron",
+    "Dahi",
+    "Kahraman",
+    "Lider",
+    "Usta",
 
     // Saygın / Profesyonel
     "Mühendis",
@@ -98,6 +104,8 @@ class _SettingsPageState extends ConsumerState<SettingsPage> {
 
   static const Map<String, String> _englishTitles = {
     "Yok": "None",
+    "Bey": "Mr.",
+    "Hanım": "Ms.",
     "Dostum": "Buddy",
     "Kanka": "Bro",
     "Abi": "Big Bro",
@@ -190,6 +198,10 @@ class _SettingsPageState extends ConsumerState<SettingsPage> {
     _userName = settings.userName;
     _selectedTitle = settings.userTitle;
     _gender = settings.gender;
+
+    if (!_titles.contains(_selectedTitle)) {
+      _titles.insert(1, _selectedTitle);
+    }
 
     _nameController = TextEditingController(text: _userName);
     for (final key in _reminderIntervals.keys) {

@@ -101,7 +101,7 @@ abstract class AppLocalizations {
   /// No description provided for @appTitle.
   ///
   /// In tr, this message translates to:
-  /// **'Ergonomik Asistan'**
+  /// **'ErgoMate'**
   String get appTitle;
 
   /// No description provided for @statusHealthy.
@@ -239,7 +239,7 @@ abstract class AppLocalizations {
   /// No description provided for @exitContent.
   ///
   /// In tr, this message translates to:
-  /// **'Ergonomik Asistan\'ı tamamen kapatmak istiyor musunuz?'**
+  /// **'ErgoMate\'i tamamen kapatmak istiyor musunuz?'**
   String get exitContent;
 
   /// No description provided for @cancel.
@@ -871,6 +871,60 @@ abstract class AppLocalizations {
   /// In tr, this message translates to:
   /// **'Hedef Seçin'**
   String get selectWaterGoal;
+
+  /// No description provided for @onboardingWelcomeTitle.
+  ///
+  /// In tr, this message translates to:
+  /// **'ErgoMate\'e Hoş Geldin!'**
+  String get onboardingWelcomeTitle;
+
+  /// No description provided for @onboardingWelcomeDesc.
+  ///
+  /// In tr, this message translates to:
+  /// **'Masaüstünde çalışırken sağlığınızı korumak ve verimliliğinizi artırmak için tasarlandı. Akıllı hatırlatıcılar, canlı su takibi ve ajanda ile gün boyu yanınızdayız.'**
+  String get onboardingWelcomeDesc;
+
+  /// No description provided for @onboardingFeaturesTitle.
+  ///
+  /// In tr, this message translates to:
+  /// **'Tüm Sağlık & Verimlilik Araçları'**
+  String get onboardingFeaturesTitle;
+
+  /// No description provided for @onboardingFeaturesDesc.
+  ///
+  /// In tr, this message translates to:
+  /// **'Göz dinlendirme (20-20-20), duruş kontrolü, canlı su takipçisi, görev yönetimi ve kişisel ajandanız tek bir kokpitte.'**
+  String get onboardingFeaturesDesc;
+
+  /// No description provided for @onboardingProfileTitle.
+  ///
+  /// In tr, this message translates to:
+  /// **'Seni Tanıyalım!'**
+  String get onboardingProfileTitle;
+
+  /// No description provided for @onboardingProfileDesc.
+  ///
+  /// In tr, this message translates to:
+  /// **'Size nasıl hitap etmemizi istersiniz?'**
+  String get onboardingProfileDesc;
+
+  /// No description provided for @onboardingNameHint.
+  ///
+  /// In tr, this message translates to:
+  /// **'Adınız (Örn: Metehan)...'**
+  String get onboardingNameHint;
+
+  /// No description provided for @onboardingTitleLabel.
+  ///
+  /// In tr, this message translates to:
+  /// **'Hitap Unvanı:'**
+  String get onboardingTitleLabel;
+
+  /// No description provided for @onboardingStartBtn.
+  ///
+  /// In tr, this message translates to:
+  /// **'Başlayalım 🚀'**
+  String get onboardingStartBtn;
 }
 
 class _AppLocalizationsDelegate

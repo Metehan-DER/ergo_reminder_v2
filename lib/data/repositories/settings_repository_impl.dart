@@ -11,7 +11,7 @@ class SettingsRepositoryImpl implements SettingsRepository {
   @override
   Future<SettingsEntity> getSettings() async {
     return SettingsEntity(
-      userName: _storage.getString('userName', defaultValue: 'Ergonomi Dostu'),
+      userName: _storage.getString('userName', defaultValue: ''),
       userTitle: _storage.getString('userTitle', defaultValue: 'Yok'),
       gender: _storage.getString('gender', defaultValue: 'Belirtilmemiş'),
       autoStart: _storage.getBool('autoStart', defaultValue: false),
@@ -31,6 +31,7 @@ class SettingsRepositoryImpl implements SettingsRepository {
         'stretch': _storage.getInt('interval_stretch', defaultValue: 60),
         'walk': _storage.getInt('interval_walk', defaultValue: 90),
       },
+      isOnboardingCompleted: _storage.getBool('isOnboardingCompleted', defaultValue: false),
     );
   }
 
@@ -40,6 +41,7 @@ class SettingsRepositoryImpl implements SettingsRepository {
     await _storage.setString('userTitle', settings.userTitle);
     await _storage.setString('gender', settings.gender);
     await _storage.setBool('autoStart', settings.autoStart);
+    await _storage.setBool('isOnboardingCompleted', settings.isOnboardingCompleted);
     
     await _storage.setString('silentStart', _formatTimeOfDay(settings.silentStart));
     await _storage.setString('silentEnd', _formatTimeOfDay(settings.silentEnd));

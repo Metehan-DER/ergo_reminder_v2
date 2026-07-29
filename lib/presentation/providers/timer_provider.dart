@@ -172,6 +172,14 @@ class TimerNotifier extends Notifier<TimerState> {
         break;
     }
 
+    final windowService = ref.read(windowServiceProvider);
+    try {
+      await windowService.show();
+      await windowManager.focus();
+      await windowManager.setAlwaysOnTop(true);
+      await windowManager.setAlwaysOnTop(false);
+    } catch (_) {}
+
     await notificationService.showNotification(
       id: id.hashCode,
       title: title,

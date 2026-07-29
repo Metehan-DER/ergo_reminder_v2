@@ -2,10 +2,11 @@ import 'dart:ui';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:lottie/lottie.dart';
-
+import 'package:window_manager/window_manager.dart';
 import '../../l10n/app_localizations.dart';
 import '../../core/config/app_config.dart';
 import '../../core/constants/daily_quotes.dart';
+import '../../core/utils/page_transitions.dart';
 
 import '../providers/app_provider.dart';
 import '../providers/service_providers.dart';
@@ -34,6 +35,7 @@ class _HomePageState extends ConsumerState<HomePage>
   late Animation<double> _pulseAnimation;
 
   late AppLocalizations _l10n;
+  bool _isDialogShowing = false;
 
   static const List<Color> _defaultColors = [
     Colors.deepPurple,
@@ -86,21 +88,15 @@ class _HomePageState extends ConsumerState<HomePage>
   }
 
   void _openSettings() {
-    Navigator.of(
-      context,
-    ).push(MaterialPageRoute(builder: (context) => const SettingsPage()));
+    Navigator.of(context).push(AppPageRoute(child: const SettingsPage()));
   }
 
   void _openStats() {
-    Navigator.of(
-      context,
-    ).push(MaterialPageRoute(builder: (context) => const StatsPage()));
+    Navigator.of(context).push(AppPageRoute(child: const StatsPage()));
   }
 
   void _openTodo() {
-    Navigator.of(
-      context,
-    ).push(MaterialPageRoute(builder: (context) => const TodoPage()));
+    Navigator.of(context).push(AppPageRoute(child: const TodoPage()));
   }
 
   void _changeColors() {
@@ -157,6 +153,16 @@ class _HomePageState extends ConsumerState<HomePage>
     required Color color,
     required IconData icon,
   }) {
+    if (_isDialogShowing) return;
+    _isDialogShowing = true;
+
+    try {
+      ref.read(windowServiceProvider).show();
+      windowManager.focus();
+      windowManager.setAlwaysOnTop(true);
+      windowManager.setAlwaysOnTop(false);
+    } catch (_) {}
+
     showDialog(
       context: context,
       barrierDismissible: false,
@@ -197,6 +203,7 @@ class _HomePageState extends ConsumerState<HomePage>
           actions: [
             TextButton(
               onPressed: () {
+                _isDialogShowing = false;
                 ref.read(timerProvider.notifier).snoozeReminder(id);
                 Navigator.pop(ctx);
               },
@@ -214,6 +221,7 @@ class _HomePageState extends ConsumerState<HomePage>
                 ),
               ),
               onPressed: () {
+                _isDialogShowing = false;
                 ref.read(timerProvider.notifier).removeFirstFromQueue();
                 Navigator.pop(ctx);
               },
@@ -222,7 +230,9 @@ class _HomePageState extends ConsumerState<HomePage>
           ],
         ),
       ),
-    );
+    ).then((_) {
+      _isDialogShowing = false;
+    });
   }
 
   @override
@@ -237,7 +247,7 @@ class _HomePageState extends ConsumerState<HomePage>
     final isRunning = appState.isRunning;
 
     ref.listen<TimerState>(timerProvider, (previous, next) {
-      if (next.dialogQueue.isNotEmpty) {
+      if (next.dialogQueue.isNotEmpty && !_isDialogShowing) {
         final activeId = next.dialogQueue.first;
         final name = _getReminderName(activeId);
         final msg = _getReminderMessage(activeId);
@@ -294,7 +304,7 @@ class _HomePageState extends ConsumerState<HomePage>
                 Row(
                   children: [
                     const Text(
-                      'Ergonomik Asistan',
+                      'ErgoMate',
                       style: TextStyle(
                         fontWeight: FontWeight.bold,
                         fontSize: 19,
@@ -907,77 +917,120 @@ class _HomePageState extends ConsumerState<HomePage>
     required int timeLeft,
     required double progress,
     required int interval,
+    VoidCallback? onSnooze,
   }) {
-    return _buildGlassCard(
-      isLightGlass: true,
-      padding: const EdgeInsets.all(14),
-      child: Row(
-        children: [
-          Container(
-            padding: const EdgeInsets.all(10),
-            decoration: BoxDecoration(
-              color: color.withValues(alpha: 0.7),
-              borderRadius: BorderRadius.circular(10),
-            ),
-            child: Icon(icon, color: Colors.white, size: 22),
-          ),
-          const SizedBox(width: 14),
-          Expanded(
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                Row(
-                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                  children: [
-                    Expanded(
-                      child: Text(
-                        name,
-                        overflow: TextOverflow.ellipsis,
-                        style: const TextStyle(
-                          fontSize: 15,
-                          fontWeight: FontWeight.w600,
-                          color: Colors.white,
-                        ),
-                      ),
-                    ),
-                    const SizedBox(width: 8),
-                    Container(
-                      padding: const EdgeInsets.symmetric(
-                        horizontal: 10,
-                        vertical: 4,
-                      ),
-                      decoration: BoxDecoration(
-                        color: Colors.white.withValues(alpha: 0.18),
-                        borderRadius: BorderRadius.circular(12),
-                        border: Border.all(
-                          color: Colors.white.withValues(alpha: 0.2),
-                        ),
-                      ),
-                      child: Text(
-                        '$timeLeft ${_l10n.minuteShort}',
-                        style: const TextStyle(
-                          fontSize: 13,
-                          fontWeight: FontWeight.bold,
-                          color: Colors.white,
-                        ),
-                      ),
-                    ),
-                  ],
+    // Süre dolmasına 1 dakika veya daha az kaldığında kart hafifçe nabız
+    // gibi parlar — kullanıcı bildirimi almadan önce görsel bir ön işaret alır.
+    final isUrgent = timeLeft <= 1;
+
+    return _UrgentPulse(
+      active: isUrgent,
+      color: color,
+      child: _buildGlassCard(
+        isLightGlass: true,
+        padding: const EdgeInsets.all(14),
+        child: Row(
+          children: [
+            Container(
+              padding: const EdgeInsets.all(10),
+              decoration: BoxDecoration(
+                gradient: LinearGradient(
+                  begin: Alignment.topLeft,
+                  end: Alignment.bottomRight,
+                  colors: [color.withValues(alpha: 0.85), color.withValues(alpha: 0.55)],
                 ),
-                const SizedBox(height: 8),
-                ClipRRect(
-                  borderRadius: BorderRadius.circular(10),
-                  child: LinearProgressIndicator(
-                    value: progress,
-                    backgroundColor: Colors.white.withValues(alpha: 0.15),
-                    valueColor: AlwaysStoppedAnimation<Color>(color),
-                    minHeight: 4,
+                borderRadius: BorderRadius.circular(10),
+                boxShadow: [
+                  BoxShadow(
+                    color: color.withValues(alpha: 0.35),
+                    blurRadius: 10,
+                    offset: const Offset(0, 3),
                   ),
-                ),
-              ],
+                ],
+              ),
+              child: Icon(icon, color: Colors.white, size: 22),
             ),
-          ),
-        ],
+            const SizedBox(width: 14),
+            Expanded(
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Row(
+                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                    children: [
+                      Expanded(
+                        child: Text(
+                          name,
+                          overflow: TextOverflow.ellipsis,
+                          style: const TextStyle(
+                            fontSize: 15,
+                            fontWeight: FontWeight.w600,
+                            color: Colors.white,
+                          ),
+                        ),
+                      ),
+                      const SizedBox(width: 8),
+                      if (onSnooze != null)
+                        GestureDetector(
+                          onTap: onSnooze,
+                          child: Padding(
+                            padding: const EdgeInsets.only(right: 4),
+                            child: Icon(
+                              Icons.snooze_rounded,
+                              size: 18,
+                              color: Colors.white.withValues(alpha: 0.7),
+                            ),
+                          ),
+                        ),
+                      Container(
+                        padding: const EdgeInsets.symmetric(
+                          horizontal: 10,
+                          vertical: 4,
+                        ),
+                        decoration: BoxDecoration(
+                          color: isUrgent
+                              ? color.withValues(alpha: 0.35)
+                              : Colors.white.withValues(alpha: 0.18),
+                          borderRadius: BorderRadius.circular(12),
+                          border: Border.all(
+                            color: isUrgent
+                                ? color.withValues(alpha: 0.6)
+                                : Colors.white.withValues(alpha: 0.2),
+                          ),
+                        ),
+                        child: Text(
+                          '$timeLeft ${_l10n.minuteShort}',
+                          style: const TextStyle(
+                            fontSize: 13,
+                            fontWeight: FontWeight.bold,
+                            color: Colors.white,
+                          ),
+                        ),
+                      ),
+                    ],
+                  ),
+                  const SizedBox(height: 8),
+                  ClipRRect(
+                    borderRadius: BorderRadius.circular(10),
+                    child: TweenAnimationBuilder<double>(
+                      tween: Tween<double>(end: progress),
+                      duration: const Duration(milliseconds: 450),
+                      curve: Curves.easeOutCubic,
+                      builder: (context, animatedProgress, _) {
+                        return LinearProgressIndicator(
+                          value: animatedProgress,
+                          backgroundColor: Colors.white.withValues(alpha: 0.15),
+                          valueColor: AlwaysStoppedAnimation<Color>(color),
+                          minHeight: 5,
+                        );
+                      },
+                    ),
+                  ),
+                ],
+              ),
+            ),
+          ],
+        ),
       ),
     );
   }
@@ -1110,5 +1163,79 @@ class _HomePageState extends ConsumerState<HomePage>
       default:
         return _l10n.msgDefault;
     }
+  }
+}
+
+/// Süresi dolmak üzere olan hatırlatıcı kartına hafif, tekrarlayan bir
+/// parlama efekti ekler. `active` false iken hiçbir ek maliyet olmadan
+/// çocuğu doğrudan döndürür.
+class _UrgentPulse extends StatefulWidget {
+  final Widget child;
+  final bool active;
+  final Color color;
+
+  const _UrgentPulse({
+    required this.child,
+    required this.active,
+    required this.color,
+  });
+
+  @override
+  State<_UrgentPulse> createState() => _UrgentPulseState();
+}
+
+class _UrgentPulseState extends State<_UrgentPulse> with SingleTickerProviderStateMixin {
+  late final AnimationController _controller = AnimationController(
+    vsync: this,
+    duration: const Duration(milliseconds: 900),
+  );
+
+  @override
+  void initState() {
+    super.initState();
+    if (widget.active) _controller.repeat(reverse: true);
+  }
+
+  @override
+  void didUpdateWidget(covariant _UrgentPulse oldWidget) {
+    super.didUpdateWidget(oldWidget);
+    if (widget.active && !_controller.isAnimating) {
+      _controller.repeat(reverse: true);
+    } else if (!widget.active && _controller.isAnimating) {
+      _controller.stop();
+      _controller.value = 0;
+    }
+  }
+
+  @override
+  void dispose() {
+    _controller.dispose();
+    super.dispose();
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    if (!widget.active) return widget.child;
+
+    return AnimatedBuilder(
+      animation: _controller,
+      builder: (context, child) {
+        final t = _controller.value;
+        return Container(
+          decoration: BoxDecoration(
+            borderRadius: BorderRadius.circular(20),
+            boxShadow: [
+              BoxShadow(
+                color: widget.color.withValues(alpha: 0.20 + t * 0.25),
+                blurRadius: 14 + t * 10,
+                spreadRadius: t * 1.5,
+              ),
+            ],
+          ),
+          child: child,
+        );
+      },
+      child: widget.child,
+    );
   }
 }

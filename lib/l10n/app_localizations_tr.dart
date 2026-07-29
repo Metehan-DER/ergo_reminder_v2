@@ -9,7 +9,7 @@ class AppLocalizationsTr extends AppLocalizations {
   AppLocalizationsTr([String locale = 'tr']) : super(locale);
 
   @override
-  String get appTitle => 'Ergonomik Asistan';
+  String get appTitle => 'ErgoMate';
 
   @override
   String get statusHealthy => 'Sağlığınız Korunuyor';
@@ -84,8 +84,7 @@ class AppLocalizationsTr extends AppLocalizations {
   String get exitTitle => 'Uygulamayı Kapat';
 
   @override
-  String get exitContent =>
-      'Ergonomik Asistan\'ı tamamen kapatmak istiyor musunuz?';
+  String get exitContent => 'ErgoMate\'i tamamen kapatmak istiyor musunuz?';
 
   @override
   String get cancel => 'İptal';
@@ -405,4 +404,33 @@ class AppLocalizationsTr extends AppLocalizations {
 
   @override
   String get selectWaterGoal => 'Hedef Seçin';
+
+  @override
+  String get onboardingWelcomeTitle => 'ErgoMate\'e Hoş Geldin!';
+
+  @override
+  String get onboardingWelcomeDesc =>
+      'Masaüstünde çalışırken sağlığınızı korumak ve verimliliğinizi artırmak için tasarlandı. Akıllı hatırlatıcılar, canlı su takibi ve ajanda ile gün boyu yanınızdayız.';
+
+  @override
+  String get onboardingFeaturesTitle => 'Tüm Sağlık & Verimlilik Araçları';
+
+  @override
+  String get onboardingFeaturesDesc =>
+      'Göz dinlendirme (20-20-20), duruş kontrolü, canlı su takipçisi, görev yönetimi ve kişisel ajandanız tek bir kokpitte.';
+
+  @override
+  String get onboardingProfileTitle => 'Seni Tanıyalım!';
+
+  @override
+  String get onboardingProfileDesc => 'Size nasıl hitap etmemizi istersiniz?';
+
+  @override
+  String get onboardingNameHint => 'Adınız (Örn: Metehan)...';
+
+  @override
+  String get onboardingTitleLabel => 'Hitap Unvanı:';
+
+  @override
+  String get onboardingStartBtn => 'Başlayalım 🚀';
 }

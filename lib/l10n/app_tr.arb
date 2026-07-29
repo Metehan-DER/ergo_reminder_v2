@@ -1,6 +1,6 @@
 {
   "@@locale": "tr",
-  "appTitle": "Ergonomik Asistan",
+  "appTitle": "ErgoMate",
   "statusHealthy": "Sağlığınız Korunuyor",
   "statusStopped": "Takip Durduruldu",
   "statusHealthyContinued": "Sağlığınız Korunuyor...",
@@ -34,7 +34,7 @@
   },
   "snoozeButtonLabel": "Ertele",
   "exitTitle": "Uygulamayı Kapat",
-  "exitContent": "Ergonomik Asistan'ı tamamen kapatmak istiyor musunuz?",
+  "exitContent": "ErgoMate'i tamamen kapatmak istiyor musunuz?",
   "cancel": "İptal",
   "quit": "Kapat",
   "stop": "Durdur",
@@ -144,5 +144,14 @@
   "removeGlass": "-1 Bardak",
   "waterGoal": "Hedef",
   "waterGoalReached": "Tebrikler! Günlük su hedefine ulaştınız! 💧",
-  "selectWaterGoal": "Hedef Seçin"
+  "selectWaterGoal": "Hedef Seçin",
+  "onboardingWelcomeTitle": "ErgoMate'e Hoş Geldin!",
+  "onboardingWelcomeDesc": "Masaüstünde çalışırken sağlığınızı korumak ve verimliliğinizi artırmak için tasarlandı. Akıllı hatırlatıcılar, canlı su takibi ve ajanda ile gün boyu yanınızdayız.",
+  "onboardingFeaturesTitle": "Tüm Sağlık & Verimlilik Araçları",
+  "onboardingFeaturesDesc": "Göz dinlendirme (20-20-20), duruş kontrolü, canlı su takipçisi, görev yönetimi ve kişisel ajandanız tek bir kokpitte.",
+  "onboardingProfileTitle": "Seni Tanıyalım!",
+  "onboardingProfileDesc": "Size nasıl hitap etmemizi istersiniz?",
+  "onboardingNameHint": "Adınız (Örn: Metehan)...",
+  "onboardingTitleLabel": "Hitap Unvanı:",
+  "onboardingStartBtn": "Başlayalım 🚀"
 }

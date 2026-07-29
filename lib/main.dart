@@ -6,11 +6,14 @@ import 'package:window_manager/window_manager.dart';
 import 'l10n/app_localizations.dart';
 
 import 'core/services/storage_service.dart';
+import 'core/utils/page_transitions.dart';
 import 'presentation/providers/service_providers.dart';
 import 'presentation/providers/app_provider.dart';
 import 'presentation/providers/theme_provider.dart';
 import 'presentation/providers/timer_provider.dart';
+import 'presentation/providers/settings_provider.dart';
 import 'presentation/pages/home_page.dart';
+import 'presentation/pages/onboarding_page.dart';
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
@@ -22,7 +25,7 @@ void main() async {
     minimumSize: Size(1000, 700),
     maximumSize: Size(1400, 900),
     center: true,
-    title: 'Ergonomik Asistan',
+    title: 'ErgoMate',
     skipTaskbar: false,
   );
   await windowManager.waitUntilReadyToShow(windowOptions, () async {
@@ -64,10 +67,21 @@ class _MyAppState extends ConsumerState<MyApp> {
   Widget build(BuildContext context) {
     final appState = ref.watch(appProvider);
     final themeState = ref.watch(themeProvider);
+    final settingsAsync = ref.watch(settingsProvider);
+
+    const pageTransitionsTheme = PageTransitionsTheme(
+      builders: {
+        TargetPlatform.android: PremiumPageTransitionsBuilder(),
+        TargetPlatform.iOS: PremiumPageTransitionsBuilder(),
+        TargetPlatform.windows: PremiumPageTransitionsBuilder(),
+        TargetPlatform.macOS: PremiumPageTransitionsBuilder(),
+        TargetPlatform.linux: PremiumPageTransitionsBuilder(),
+      },
+    );
 
     return MaterialApp(
       debugShowCheckedModeBanner: false,
-      title: 'Ergonomik Asistan',
+      title: 'ErgoMate',
       themeMode: themeState.themeMode,
       theme: ThemeData(
         brightness: Brightness.light,
@@ -77,6 +91,7 @@ class _MyAppState extends ConsumerState<MyApp> {
         ),
         useMaterial3: true,
         textTheme: GoogleFonts.manropeTextTheme(),
+        pageTransitionsTheme: pageTransitionsTheme,
       ),
       darkTheme: ThemeData(
         brightness: Brightness.dark,
@@ -86,6 +101,7 @@ class _MyAppState extends ConsumerState<MyApp> {
         ),
         useMaterial3: true,
         textTheme: GoogleFonts.manropeTextTheme(ThemeData.dark().textTheme),
+        pageTransitionsTheme: pageTransitionsTheme,
       ),
       locale: appState.locale,
       localizationsDelegates: const [
@@ -95,7 +111,15 @@ class _MyAppState extends ConsumerState<MyApp> {
         GlobalCupertinoLocalizations.delegate,
       ],
       supportedLocales: const [Locale('tr', ''), Locale('en', '')],
-      home: const HomePage(),
+      home: settingsAsync.when(
+        data: (settings) => settings.isOnboardingCompleted
+            ? const HomePage()
+            : const OnboardingPage(),
+        loading: () => const Scaffold(
+          body: Center(child: CircularProgressIndicator(color: Colors.white)),
+        ),
+        error: (err, stack) => const HomePage(),
+      ),
     );
   }
 }

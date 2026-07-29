@@ -1,6 +1,6 @@
 {
   "@@locale": "en",
-  "appTitle": "Ergonomic Assistant",
+  "appTitle": "ErgoMate",
   "statusHealthy": "Your Health is Protected",
   "statusStopped": "Tracking Stopped",
   "statusHealthyContinued": "Your Health is Protected...",
@@ -34,7 +34,7 @@
   },
   "snoozeButtonLabel": "Snooze",
   "exitTitle": "Quit Application",
-  "exitContent": "Do you want to completely quit Ergonomic Assistant?",
+  "exitContent": "Do you want to completely quit ErgoMate?",
   "cancel": "Cancel",
   "quit": "Quit",
   "stop": "Stop",
@@ -144,5 +144,14 @@
   "removeGlass": "-1 Glass",
   "waterGoal": "Goal",
   "waterGoalReached": "Awesome! Daily hydration goal reached! 💧",
-  "selectWaterGoal": "Select Goal"
+  "selectWaterGoal": "Select Goal",
+  "onboardingWelcomeTitle": "Welcome to ErgoMate!",
+  "onboardingWelcomeDesc": "Designed to protect your health and boost your productivity while working at your desktop. Smart reminders, water tracking, and calendar agenda by your side all day.",
+  "onboardingFeaturesTitle": "All Health & Productivity Tools",
+  "onboardingFeaturesDesc": "Eye rest (20-20-20), posture check, live water tracker, task management, and personal calendar in one cockpit.",
+  "onboardingProfileTitle": "Let's Get to Know You!",
+  "onboardingProfileDesc": "How would you like us to address you?",
+  "onboardingNameHint": "Your name (e.g. Alex)...",
+  "onboardingTitleLabel": "Honorific Title:",
+  "onboardingStartBtn": "Get Started 🚀"
 }

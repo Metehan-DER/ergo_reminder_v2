@@ -9,6 +9,7 @@ class SettingsEntity {
   final TimeOfDay silentEnd;
   final Map<String, bool> enabledReminders;
   final Map<String, int> reminderIntervals;
+  final bool isOnboardingCompleted;
 
   const SettingsEntity({
     required this.userName,
@@ -19,6 +20,7 @@ class SettingsEntity {
     required this.silentEnd,
     required this.enabledReminders,
     required this.reminderIntervals,
+    this.isOnboardingCompleted = false,
   });
 
   SettingsEntity copyWith({
@@ -30,6 +32,7 @@ class SettingsEntity {
     TimeOfDay? silentEnd,
     Map<String, bool>? enabledReminders,
     Map<String, int>? reminderIntervals,
+    bool? isOnboardingCompleted,
   }) {
     return SettingsEntity(
       userName: userName ?? this.userName,
@@ -40,6 +43,7 @@ class SettingsEntity {
       silentEnd: silentEnd ?? this.silentEnd,
       enabledReminders: enabledReminders ?? this.enabledReminders,
       reminderIntervals: reminderIntervals ?? this.reminderIntervals,
+      isOnboardingCompleted: isOnboardingCompleted ?? this.isOnboardingCompleted,
     );
   }
 }
