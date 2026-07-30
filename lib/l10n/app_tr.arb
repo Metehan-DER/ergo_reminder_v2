@@ -110,6 +110,8 @@
   "addTask": "Yeni Görev Ekle",
   "editTask": "Görevi Düzenle",
   "deleteTask": "Görevi Sil",
+  "taskDeleted": "Görev başarıyla silindi",
+  "undo": "Geri Al",
   "taskTitleHint": "Görev başlığı...",
   "taskDescHint": "Açıklama veya notlar (isteğe bağlı)...",
   "priority": "Öncelik",

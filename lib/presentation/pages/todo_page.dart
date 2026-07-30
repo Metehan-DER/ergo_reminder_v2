@@ -1,5 +1,6 @@
 import 'dart:ui';
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:intl/intl.dart';
 
@@ -27,11 +28,11 @@ class _TodoPageState extends ConsumerState<TodoPage> {
   Color _getPriorityColor(TodoPriority priority) {
     switch (priority) {
       case TodoPriority.high:
-        return const Color(/* 0xFFFF5252 */ 0xFFFF5252);
+        return const Color(0xFFFF5252);
       case TodoPriority.medium:
-        return const Color(/* 0xFFFFB74D */ 0xFFFFB74D);
+        return const Color(0xFFFFB74D);
       case TodoPriority.low:
-        return const Color(/* 0xFF4DD0E1 */ 0xFF4DD0E1);
+        return const Color(0xFF4DD0E1);
     }
   }
 
@@ -74,8 +75,13 @@ class _TodoPageState extends ConsumerState<TodoPage> {
 
   void _showAddEditTodoSheet([TodoItem? todoToEdit]) {
     final l10n = AppLocalizations.of(context);
-    final titleController = TextEditingController(text: todoToEdit?.title ?? '');
-    final descController = TextEditingController(text: todoToEdit?.description ?? '');
+    final accent = ref.read(themeProvider).primarySeedColor;
+    final titleController = TextEditingController(
+      text: todoToEdit?.title ?? '',
+    );
+    final descController = TextEditingController(
+      text: todoToEdit?.description ?? '',
+    );
     TodoPriority selectedPriority = todoToEdit?.priority ?? TodoPriority.medium;
     TodoCategory selectedCategory = todoToEdit?.category ?? TodoCategory.work;
     DateTime? selectedDueDate = todoToEdit?.dueDate;
@@ -99,8 +105,15 @@ class _TodoPageState extends ConsumerState<TodoPage> {
                   bottom: bottomPadding + 24,
                 ),
                 decoration: BoxDecoration(
-                  color: Colors.deepPurple.shade900.withValues(alpha: 0.95),
-                  borderRadius: const BorderRadius.vertical(top: Radius.circular(32)),
+                  // Sabit deepPurple yerine aktif paletle harmanlanmış, zengin bir zemin.
+                  color: Color.lerp(
+                    Colors.black,
+                    accent,
+                    0.35,
+                  )!.withValues(alpha: 0.95),
+                  borderRadius: const BorderRadius.vertical(
+                    top: Radius.circular(32),
+                  ),
                   border: Border.all(color: Colors.white24, width: 1.2),
                 ),
                 child: SingleChildScrollView(
@@ -127,11 +140,13 @@ class _TodoPageState extends ConsumerState<TodoPage> {
                           Container(
                             padding: const EdgeInsets.all(8),
                             decoration: BoxDecoration(
-                              color: Colors.deepPurpleAccent.withValues(alpha: 0.3),
+                              color: accent.withValues(alpha: 0.3),
                               shape: BoxShape.circle,
                             ),
                             child: Icon(
-                              todoToEdit == null ? Icons.add_task_rounded : Icons.edit_note_rounded,
+                              todoToEdit == null
+                                  ? Icons.add_task_rounded
+                                  : Icons.edit_note_rounded,
                               color: Colors.white,
                               size: 22,
                             ),
@@ -152,14 +167,20 @@ class _TodoPageState extends ConsumerState<TodoPage> {
                       // Title Field
                       TextField(
                         controller: titleController,
-                        style: const TextStyle(color: Colors.white, fontSize: 15),
+                        style: const TextStyle(
+                          color: Colors.white,
+                          fontSize: 15,
+                        ),
                         autofocus: true,
                         decoration: InputDecoration(
                           hintText: l10n.taskTitleHint,
                           hintStyle: const TextStyle(color: Colors.white38),
                           filled: true,
                           fillColor: Colors.white.withValues(alpha: 0.08),
-                          contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 14),
+                          contentPadding: const EdgeInsets.symmetric(
+                            horizontal: 16,
+                            vertical: 14,
+                          ),
                           border: OutlineInputBorder(
                             borderRadius: BorderRadius.circular(16),
                             borderSide: BorderSide.none,
@@ -170,7 +191,7 @@ class _TodoPageState extends ConsumerState<TodoPage> {
                           ),
                           focusedBorder: OutlineInputBorder(
                             borderRadius: BorderRadius.circular(16),
-                            borderSide: const BorderSide(color: Colors.deepPurpleAccent, width: 1.5),
+                            borderSide: BorderSide(color: accent, width: 1.5),
                           ),
                         ),
                       ),
@@ -179,14 +200,20 @@ class _TodoPageState extends ConsumerState<TodoPage> {
                       // Description Field
                       TextField(
                         controller: descController,
-                        style: const TextStyle(color: Colors.white, fontSize: 14),
+                        style: const TextStyle(
+                          color: Colors.white,
+                          fontSize: 14,
+                        ),
                         maxLines: 2,
                         decoration: InputDecoration(
                           hintText: l10n.taskDescHint,
                           hintStyle: const TextStyle(color: Colors.white38),
                           filled: true,
                           fillColor: Colors.white.withValues(alpha: 0.08),
-                          contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
+                          contentPadding: const EdgeInsets.symmetric(
+                            horizontal: 16,
+                            vertical: 12,
+                          ),
                           border: OutlineInputBorder(
                             borderRadius: BorderRadius.circular(16),
                             borderSide: BorderSide.none,
@@ -197,7 +224,7 @@ class _TodoPageState extends ConsumerState<TodoPage> {
                           ),
                           focusedBorder: OutlineInputBorder(
                             borderRadius: BorderRadius.circular(16),
-                            borderSide: const BorderSide(color: Colors.deepPurpleAccent, width: 1.5),
+                            borderSide: BorderSide(color: accent, width: 1.5),
                           ),
                         ),
                       ),
@@ -221,15 +248,24 @@ class _TodoPageState extends ConsumerState<TodoPage> {
                             child: Padding(
                               padding: const EdgeInsets.only(right: 6),
                               child: GestureDetector(
-                                onTap: () => setSheetState(() => selectedPriority = p),
+                                onTap: () {
+                                  HapticFeedback.selectionClick();
+                                  setSheetState(() => selectedPriority = p);
+                                },
                                 child: AnimatedContainer(
                                   duration: const Duration(milliseconds: 200),
-                                  padding: const EdgeInsets.symmetric(vertical: 10),
+                                  padding: const EdgeInsets.symmetric(
+                                    vertical: 10,
+                                  ),
                                   decoration: BoxDecoration(
-                                    color: isSelected ? color.withValues(alpha: 0.25) : Colors.white.withValues(alpha: 0.06),
+                                    color: isSelected
+                                        ? color.withValues(alpha: 0.25)
+                                        : Colors.white.withValues(alpha: 0.06),
                                     borderRadius: BorderRadius.circular(14),
                                     border: Border.all(
-                                      color: isSelected ? color : Colors.white12,
+                                      color: isSelected
+                                          ? color
+                                          : Colors.white12,
                                       width: isSelected ? 1.5 : 1.0,
                                     ),
                                   ),
@@ -237,8 +273,12 @@ class _TodoPageState extends ConsumerState<TodoPage> {
                                     child: Text(
                                       _getPriorityName(p, l10n),
                                       style: TextStyle(
-                                        color: isSelected ? color : Colors.white70,
-                                        fontWeight: isSelected ? FontWeight.bold : FontWeight.normal,
+                                        color: isSelected
+                                            ? color
+                                            : Colors.white70,
+                                        fontWeight: isSelected
+                                            ? FontWeight.bold
+                                            : FontWeight.normal,
                                         fontSize: 12,
                                       ),
                                     ),
@@ -267,15 +307,23 @@ class _TodoPageState extends ConsumerState<TodoPage> {
                         children: TodoCategory.values.map((c) {
                           final isSelected = selectedCategory == c;
                           return GestureDetector(
-                            onTap: () => setSheetState(() => selectedCategory = c),
+                            onTap: () {
+                              HapticFeedback.selectionClick();
+                              setSheetState(() => selectedCategory = c);
+                            },
                             child: AnimatedContainer(
                               duration: const Duration(milliseconds: 200),
-                              padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 8),
+                              padding: const EdgeInsets.symmetric(
+                                horizontal: 14,
+                                vertical: 8,
+                              ),
                               decoration: BoxDecoration(
-                                color: isSelected ? Colors.deepPurpleAccent.withValues(alpha: 0.4) : Colors.white.withValues(alpha: 0.06),
+                                color: isSelected
+                                    ? accent.withValues(alpha: 0.4)
+                                    : Colors.white.withValues(alpha: 0.06),
                                 borderRadius: BorderRadius.circular(14),
                                 border: Border.all(
-                                  color: isSelected ? Colors.deepPurpleAccent : Colors.white12,
+                                  color: isSelected ? accent : Colors.white12,
                                   width: isSelected ? 1.5 : 1.0,
                                 ),
                               ),
@@ -285,14 +333,20 @@ class _TodoPageState extends ConsumerState<TodoPage> {
                                   Icon(
                                     _getCategoryIcon(c),
                                     size: 15,
-                                    color: isSelected ? Colors.white : Colors.white70,
+                                    color: isSelected
+                                        ? Colors.white
+                                        : Colors.white70,
                                   ),
                                   const SizedBox(width: 6),
                                   Text(
                                     _getCategoryName(c, l10n),
                                     style: TextStyle(
-                                      color: isSelected ? Colors.white : Colors.white70,
-                                      fontWeight: isSelected ? FontWeight.bold : FontWeight.normal,
+                                      color: isSelected
+                                          ? Colors.white
+                                          : Colors.white70,
+                                      fontWeight: isSelected
+                                          ? FontWeight.bold
+                                          : FontWeight.normal,
                                       fontSize: 12,
                                     ),
                                   ),
@@ -317,10 +371,14 @@ class _TodoPageState extends ConsumerState<TodoPage> {
                             Container(
                               padding: const EdgeInsets.all(8),
                               decoration: BoxDecoration(
-                                color: Colors.blueAccent.withValues(alpha: 0.2),
+                                color: accent.withValues(alpha: 0.2),
                                 shape: BoxShape.circle,
                               ),
-                              child: const Icon(Icons.event_rounded, color: Colors.blueAccent, size: 18),
+                              child: Icon(
+                                Icons.event_rounded,
+                                color: accent,
+                                size: 18,
+                              ),
                             ),
                             const SizedBox(width: 12),
                             Expanded(
@@ -329,11 +387,16 @@ class _TodoPageState extends ConsumerState<TodoPage> {
                                 children: [
                                   Text(
                                     l10n.dueDate,
-                                    style: const TextStyle(color: Colors.white60, fontSize: 11),
+                                    style: const TextStyle(
+                                      color: Colors.white60,
+                                      fontSize: 11,
+                                    ),
                                   ),
                                   Text(
                                     selectedDueDate != null
-                                        ? DateFormat('dd MMM yyyy - HH:mm').format(selectedDueDate!)
+                                        ? DateFormat(
+                                            'dd MMM yyyy - HH:mm',
+                                          ).format(selectedDueDate!)
                                         : l10n.noDueDate,
                                     style: const TextStyle(
                                       color: Colors.white,
@@ -348,15 +411,22 @@ class _TodoPageState extends ConsumerState<TodoPage> {
                               onPressed: () async {
                                 final date = await showDatePicker(
                                   context: context,
-                                  initialDate: selectedDueDate ?? DateTime.now(),
-                                  firstDate: DateTime.now().subtract(const Duration(days: 365)),
-                                  lastDate: DateTime.now().add(const Duration(days: 365 * 3)),
+                                  initialDate:
+                                      selectedDueDate ?? DateTime.now(),
+                                  firstDate: DateTime.now().subtract(
+                                    const Duration(days: 365),
+                                  ),
+                                  lastDate: DateTime.now().add(
+                                    const Duration(days: 365 * 3),
+                                  ),
                                 );
                                 if (date != null && context.mounted) {
                                   final time = await showTimePicker(
                                     context: context,
                                     initialTime: selectedDueDate != null
-                                        ? TimeOfDay.fromDateTime(selectedDueDate!)
+                                        ? TimeOfDay.fromDateTime(
+                                            selectedDueDate!,
+                                          )
                                         : const TimeOfDay(hour: 12, minute: 0),
                                   );
                                   if (time != null) {
@@ -372,10 +442,13 @@ class _TodoPageState extends ConsumerState<TodoPage> {
                                   }
                                 }
                               },
-                              icon: const Icon(Icons.edit_calendar_rounded, size: 16),
+                              icon: const Icon(
+                                Icons.edit_calendar_rounded,
+                                size: 16,
+                              ),
                               label: Text(l10n.calendarSelectDate),
                               style: TextButton.styleFrom(
-                                foregroundColor: Colors.lightBlueAccent,
+                                foregroundColor: accent,
                               ),
                             ),
                           ],
@@ -389,9 +462,12 @@ class _TodoPageState extends ConsumerState<TodoPage> {
                         height: 48,
                         child: ElevatedButton(
                           style: ElevatedButton.styleFrom(
-                            backgroundColor: Colors.deepPurpleAccent,
-                            shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
+                            backgroundColor: accent,
+                            shape: RoundedRectangleBorder(
+                              borderRadius: BorderRadius.circular(16),
+                            ),
                             elevation: 4,
+                            shadowColor: accent.withValues(alpha: 0.5),
                           ),
                           onPressed: () {
                             final title = titleController.text.trim();
@@ -399,7 +475,8 @@ class _TodoPageState extends ConsumerState<TodoPage> {
 
                             if (todoToEdit == null) {
                               final newTodo = TodoItem(
-                                id: DateTime.now().millisecondsSinceEpoch.toString(),
+                                id: DateTime.now().millisecondsSinceEpoch
+                                    .toString(),
                                 title: title,
                                 description: descController.text.trim(),
                                 priority: selectedPriority,
@@ -415,13 +492,19 @@ class _TodoPageState extends ConsumerState<TodoPage> {
                                 category: selectedCategory,
                                 dueDate: selectedDueDate,
                               );
-                              ref.read(todoProvider.notifier).updateTodo(updatedTodo);
+                              ref
+                                  .read(todoProvider.notifier)
+                                  .updateTodo(updatedTodo);
                             }
                             Navigator.pop(ctx);
                           },
                           child: Text(
                             l10n.save,
-                            style: const TextStyle(color: Colors.white, fontWeight: FontWeight.bold, fontSize: 15),
+                            style: const TextStyle(
+                              color: Colors.white,
+                              fontWeight: FontWeight.bold,
+                              fontSize: 15,
+                            ),
                           ),
                         ),
                       ),
@@ -436,12 +519,33 @@ class _TodoPageState extends ConsumerState<TodoPage> {
     );
   }
 
+  void _deleteWithUndo(TodoItem todo, AppLocalizations l10n, Color accent) {
+    ref.read(todoProvider.notifier).deleteTodo(todo.id);
+    ScaffoldMessenger.of(context).clearSnackBars();
+    ScaffoldMessenger.of(context).showSnackBar(
+      SnackBar(
+        behavior: SnackBarBehavior.floating,
+        backgroundColor: const Color(0xFF232238),
+        content: Text(
+          l10n.taskDeleted,
+          style: const TextStyle(color: Colors.white),
+        ),
+        action: SnackBarAction(
+          label: l10n.undo,
+          textColor: accent,
+          onPressed: () => ref.read(todoProvider.notifier).addTodo(todo),
+        ),
+      ),
+    );
+  }
+
   @override
   Widget build(BuildContext context) {
     final l10n = AppLocalizations.of(context);
     final themeState = ref.watch(themeProvider);
     final todoState = ref.watch(todoProvider);
     final bgColors = themeState.activeGradientColors;
+    final accent = themeState.primarySeedColor;
 
     return Scaffold(
       extendBodyBehindAppBar: true,
@@ -454,22 +558,23 @@ class _TodoPageState extends ConsumerState<TodoPage> {
         ),
         title: Text(
           l10n.todoTitle,
-          style: const TextStyle(fontWeight: FontWeight.bold, color: Colors.white),
-        ),
-        actions: [
-          IconButton(
-            icon: const Icon(Icons.add_task, color: Colors.white),
-            onPressed: () => _showAddEditTodoSheet(),
-            tooltip: l10n.addTask,
+          style: const TextStyle(
+            fontWeight: FontWeight.bold,
+            color: Colors.white,
           ),
-          const SizedBox(width: 8),
-        ],
+        ),
       ),
       floatingActionButton: FloatingActionButton.extended(
-        backgroundColor: Colors.deepPurpleAccent,
+        backgroundColor: accent,
         elevation: 6,
         icon: const Icon(Icons.add, color: Colors.white),
-        label: Text(l10n.addTask, style: const TextStyle(color: Colors.white, fontWeight: FontWeight.bold)),
+        label: Text(
+          l10n.addTask,
+          style: const TextStyle(
+            color: Colors.white,
+            fontWeight: FontWeight.bold,
+          ),
+        ),
         onPressed: () => _showAddEditTodoSheet(),
       ),
       body: Container(
@@ -485,23 +590,49 @@ class _TodoPageState extends ConsumerState<TodoPage> {
             children: [
               // Metric Stats Bar
               Padding(
-                padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 6),
+                padding: const EdgeInsets.symmetric(
+                  horizontal: 16,
+                  vertical: 6,
+                ),
                 child: Row(
                   children: [
-                    _buildStatCard(l10n.filterAll, '${todoState.todos.length}', Colors.deepPurpleAccent),
+                    _buildStatCard(
+                      l10n.filterAll,
+                      '${todoState.todos.length}',
+                      accent,
+                      Icons.list_alt_rounded,
+                    ),
                     const SizedBox(width: 8),
-                    _buildStatCard(l10n.filterToday, '${todoState.todayCount}', Colors.blueAccent),
+                    _buildStatCard(
+                      l10n.filterToday,
+                      '${todoState.todayCount}',
+                      Colors.blueAccent,
+                      Icons.today_rounded,
+                    ),
                     const SizedBox(width: 8),
-                    _buildStatCard(l10n.filterPending, '${todoState.pendingCount}', Colors.amberAccent),
+                    _buildStatCard(
+                      l10n.filterPending,
+                      '${todoState.pendingCount}',
+                      Colors.amberAccent,
+                      Icons.hourglass_bottom_rounded,
+                    ),
                     const SizedBox(width: 8),
-                    _buildStatCard(l10n.filterCompleted, '${todoState.completedCount}', Colors.greenAccent),
+                    _buildStatCard(
+                      l10n.filterCompleted,
+                      '${todoState.completedCount}',
+                      Colors.greenAccent,
+                      Icons.task_alt_rounded,
+                    ),
                   ],
                 ),
               ),
 
               // Search & Filter Container
               Padding(
-                padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+                padding: const EdgeInsets.symmetric(
+                  horizontal: 16,
+                  vertical: 8,
+                ),
                 child: ClipRRect(
                   borderRadius: BorderRadius.circular(20),
                   child: BackdropFilter(
@@ -519,28 +650,58 @@ class _TodoPageState extends ConsumerState<TodoPage> {
                           TextField(
                             controller: _searchController,
                             onChanged: (val) {
-                              ref.read(todoProvider.notifier).setSearchQuery(val);
+                              ref
+                                  .read(todoProvider.notifier)
+                                  .setSearchQuery(val);
+                              setState(() {});
                             },
-                            style: const TextStyle(color: Colors.white, fontSize: 14),
+                            style: const TextStyle(
+                              color: Colors.white,
+                              fontSize: 14,
+                            ),
                             decoration: InputDecoration(
                               hintText: l10n.searchTasks,
                               hintStyle: const TextStyle(color: Colors.white38),
-                              prefixIcon: const Icon(Icons.search_rounded, color: Colors.white60, size: 20),
+                              prefixIcon: const Icon(
+                                Icons.search_rounded,
+                                color: Colors.white60,
+                                size: 20,
+                              ),
                               suffixIcon: _searchController.text.isNotEmpty
                                   ? IconButton(
-                                      icon: const Icon(Icons.clear_rounded, color: Colors.white60, size: 18),
+                                      icon: const Icon(
+                                        Icons.clear_rounded,
+                                        color: Colors.white60,
+                                        size: 18,
+                                      ),
                                       onPressed: () {
                                         _searchController.clear();
-                                        ref.read(todoProvider.notifier).setSearchQuery('');
+                                        ref
+                                            .read(todoProvider.notifier)
+                                            .setSearchQuery('');
+                                        setState(() {});
                                       },
                                     )
                                   : null,
                               filled: true,
                               fillColor: Colors.black.withValues(alpha: 0.15),
-                              contentPadding: const EdgeInsets.symmetric(vertical: 10),
+                              contentPadding: const EdgeInsets.symmetric(
+                                vertical: 10,
+                              ),
                               border: OutlineInputBorder(
                                 borderRadius: BorderRadius.circular(14),
                                 borderSide: BorderSide.none,
+                              ),
+                              enabledBorder: OutlineInputBorder(
+                                borderRadius: BorderRadius.circular(14),
+                                borderSide: BorderSide.none,
+                              ),
+                              focusedBorder: OutlineInputBorder(
+                                borderRadius: BorderRadius.circular(14),
+                                borderSide: BorderSide(
+                                  color: accent,
+                                  width: 1.4,
+                                ),
                               ),
                             ),
                           ),
@@ -551,10 +712,26 @@ class _TodoPageState extends ConsumerState<TodoPage> {
                             scrollDirection: Axis.horizontal,
                             child: Row(
                               children: [
-                                _buildFilterPill(l10n.filterAll, TodoFilter.all),
-                                _buildFilterPill(l10n.filterToday, TodoFilter.today),
-                                _buildFilterPill(l10n.filterPending, TodoFilter.pending),
-                                _buildFilterPill(l10n.filterCompleted, TodoFilter.completed),
+                                _buildFilterPill(
+                                  l10n.filterAll,
+                                  TodoFilter.all,
+                                  accent,
+                                ),
+                                _buildFilterPill(
+                                  l10n.filterToday,
+                                  TodoFilter.today,
+                                  accent,
+                                ),
+                                _buildFilterPill(
+                                  l10n.filterPending,
+                                  TodoFilter.pending,
+                                  accent,
+                                ),
+                                _buildFilterPill(
+                                  l10n.filterCompleted,
+                                  TodoFilter.completed,
+                                  accent,
+                                ),
                               ],
                             ),
                           ),
@@ -575,25 +752,48 @@ class _TodoPageState extends ConsumerState<TodoPage> {
                             Container(
                               padding: const EdgeInsets.all(20),
                               decoration: BoxDecoration(
-                                color: Colors.white.withValues(alpha: 0.08),
+                                color: accent.withValues(alpha: 0.12),
                                 shape: BoxShape.circle,
                               ),
-                              child: const Icon(Icons.assignment_turned_in_rounded, size: 48, color: Colors.white38),
+                              child: Icon(
+                                Icons.assignment_turned_in_rounded,
+                                size: 48,
+                                color: accent.withValues(alpha: 0.85),
+                              ),
                             ),
                             const SizedBox(height: 16),
                             Text(
                               l10n.noTasksFound,
-                              style: const TextStyle(color: Colors.white70, fontSize: 15, fontWeight: FontWeight.w500),
+                              style: const TextStyle(
+                                color: Colors.white70,
+                                fontSize: 15,
+                                fontWeight: FontWeight.w500,
+                              ),
+                            ),
+                            const SizedBox(height: 16),
+                            TextButton.icon(
+                              onPressed: () => _showAddEditTodoSheet(),
+                              icon: const Icon(Icons.add_rounded, size: 18),
+                              label: Text(l10n.addTask),
+                              style: TextButton.styleFrom(
+                                foregroundColor: accent,
+                              ),
                             ),
                           ],
                         ),
                       )
                     : ListView.builder(
-                        padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 6),
+                        padding: const EdgeInsets.symmetric(
+                          horizontal: 16,
+                          vertical: 6,
+                        ),
                         itemCount: todoState.filteredTodos.length,
                         itemBuilder: (context, index) {
                           final todo = todoState.filteredTodos[index];
-                          return _buildEnhancedTodoCard(todo, l10n);
+                          return _StaggeredEntry(
+                            index: index,
+                            child: _buildEnhancedTodoCard(todo, l10n, accent),
+                          );
                         },
                       ),
               ),
@@ -604,14 +804,19 @@ class _TodoPageState extends ConsumerState<TodoPage> {
     );
   }
 
-  Widget _buildStatCard(String label, String value, Color color) {
+  Widget _buildStatCard(
+    String label,
+    String value,
+    Color color,
+    IconData icon,
+  ) {
     return Expanded(
       child: ClipRRect(
         borderRadius: BorderRadius.circular(16),
         child: BackdropFilter(
           filter: ImageFilter.blur(sigmaX: 10, sigmaY: 10),
           child: Container(
-            padding: const EdgeInsets.symmetric(vertical: 10, horizontal: 8),
+            padding: const EdgeInsets.symmetric(vertical: 10, horizontal: 6),
             decoration: BoxDecoration(
               color: Colors.white.withValues(alpha: 0.08),
               borderRadius: BorderRadius.circular(16),
@@ -619,16 +824,22 @@ class _TodoPageState extends ConsumerState<TodoPage> {
             ),
             child: Column(
               children: [
+                Icon(icon, color: color, size: 15),
+                const SizedBox(height: 3),
                 Text(
                   value,
-                  style: TextStyle(color: color, fontWeight: FontWeight.bold, fontSize: 18),
+                  style: TextStyle(
+                    color: color,
+                    fontWeight: FontWeight.bold,
+                    fontSize: 17,
+                  ),
                 ),
-                const SizedBox(height: 2),
+                const SizedBox(height: 1),
                 Text(
                   label,
                   maxLines: 1,
                   overflow: TextOverflow.ellipsis,
-                  style: const TextStyle(color: Colors.white60, fontSize: 11),
+                  style: const TextStyle(color: Colors.white60, fontSize: 10.5),
                 ),
               ],
             ),
@@ -638,7 +849,7 @@ class _TodoPageState extends ConsumerState<TodoPage> {
     );
   }
 
-  Widget _buildFilterPill(String label, TodoFilter filter) {
+  Widget _buildFilterPill(String label, TodoFilter filter, Color accent) {
     final todoState = ref.watch(todoProvider);
     final isSelected = todoState.filter == filter;
 
@@ -646,17 +857,16 @@ class _TodoPageState extends ConsumerState<TodoPage> {
       padding: const EdgeInsets.only(right: 6),
       child: GestureDetector(
         onTap: () {
+          HapticFeedback.selectionClick();
           ref.read(todoProvider.notifier).setFilter(filter);
         },
         child: AnimatedContainer(
           duration: const Duration(milliseconds: 200),
           padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 8),
           decoration: BoxDecoration(
-            color: isSelected ? Colors.deepPurpleAccent : Colors.white.withValues(alpha: 0.1),
+            color: isSelected ? accent : Colors.white.withValues(alpha: 0.1),
             borderRadius: BorderRadius.circular(12),
-            border: Border.all(
-              color: isSelected ? Colors.deepPurpleAccent : Colors.white12,
-            ),
+            border: Border.all(color: isSelected ? accent : Colors.white12),
           ),
           child: Text(
             label,
@@ -671,17 +881,24 @@ class _TodoPageState extends ConsumerState<TodoPage> {
     );
   }
 
-  Widget _buildEnhancedTodoCard(TodoItem todo, AppLocalizations l10n) {
+  Widget _buildEnhancedTodoCard(
+    TodoItem todo,
+    AppLocalizations l10n,
+    Color accent,
+  ) {
     final priorityColor = _getPriorityColor(todo.priority);
     final categoryIcon = _getCategoryIcon(todo.category);
 
     return Container(
+      key: ValueKey(todo.id),
       margin: const EdgeInsets.only(bottom: 10),
       decoration: BoxDecoration(
         color: Colors.white.withValues(alpha: todo.isCompleted ? 0.08 : 0.15),
         borderRadius: BorderRadius.circular(18),
         border: Border.all(
-          color: todo.isCompleted ? Colors.white10 : priorityColor.withValues(alpha: 0.4),
+          color: todo.isCompleted
+              ? Colors.white10
+              : priorityColor.withValues(alpha: 0.4),
           width: 1.2,
         ),
         boxShadow: [
@@ -712,24 +929,40 @@ class _TodoPageState extends ConsumerState<TodoPage> {
                       // Animated Checkbox Button
                       GestureDetector(
                         onTap: () {
+                          HapticFeedback.selectionClick();
                           ref.read(todoProvider.notifier).toggleTodo(todo.id);
                         },
                         child: AnimatedContainer(
                           duration: const Duration(milliseconds: 200),
+                          curve: Curves.easeOutBack,
                           margin: const EdgeInsets.only(top: 2),
                           width: 22,
                           height: 22,
                           decoration: BoxDecoration(
                             shape: BoxShape.circle,
-                            color: todo.isCompleted ? Colors.greenAccent : Colors.white.withValues(alpha: 0.1),
+                            color: todo.isCompleted
+                                ? Colors.greenAccent
+                                : Colors.white.withValues(alpha: 0.1),
                             border: Border.all(
-                              color: todo.isCompleted ? Colors.greenAccent : Colors.white54,
+                              color: todo.isCompleted
+                                  ? Colors.greenAccent
+                                  : Colors.white54,
                               width: 1.8,
                             ),
                           ),
-                          child: todo.isCompleted
-                              ? const Icon(Icons.check_rounded, size: 14, color: Colors.black)
-                              : null,
+                          child: AnimatedSwitcher(
+                            duration: const Duration(milliseconds: 150),
+                            child: todo.isCompleted
+                                ? const Icon(
+                                    Icons.check_rounded,
+                                    key: ValueKey('checked'),
+                                    size: 14,
+                                    color: Colors.black,
+                                  )
+                                : const SizedBox.shrink(
+                                    key: ValueKey('unchecked'),
+                                  ),
+                          ),
                         ),
                       ),
                       const SizedBox(width: 12),
@@ -739,14 +972,19 @@ class _TodoPageState extends ConsumerState<TodoPage> {
                         child: Column(
                           crossAxisAlignment: CrossAxisAlignment.start,
                           children: [
-                            Text(
-                              todo.title,
+                            AnimatedDefaultTextStyle(
+                              duration: const Duration(milliseconds: 200),
                               style: TextStyle(
-                                color: todo.isCompleted ? Colors.white38 : Colors.white,
+                                color: todo.isCompleted
+                                    ? Colors.white38
+                                    : Colors.white,
                                 fontSize: 14,
                                 fontWeight: FontWeight.w600,
-                                decoration: todo.isCompleted ? TextDecoration.lineThrough : null,
+                                decoration: todo.isCompleted
+                                    ? TextDecoration.lineThrough
+                                    : null,
                               ),
+                              child: Text(todo.title),
                             ),
                             if (todo.description.isNotEmpty) ...[
                               const SizedBox(height: 4),
@@ -755,7 +993,9 @@ class _TodoPageState extends ConsumerState<TodoPage> {
                                 maxLines: 2,
                                 overflow: TextOverflow.ellipsis,
                                 style: TextStyle(
-                                  color: todo.isCompleted ? Colors.white38 : Colors.white70,
+                                  color: todo.isCompleted
+                                      ? Colors.white38
+                                      : Colors.white70,
                                   fontSize: 12,
                                 ),
                               ),
@@ -765,18 +1005,28 @@ class _TodoPageState extends ConsumerState<TodoPage> {
                               children: [
                                 // Category Pill
                                 Container(
-                                  padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 3),
+                                  padding: const EdgeInsets.symmetric(
+                                    horizontal: 8,
+                                    vertical: 3,
+                                  ),
                                   decoration: BoxDecoration(
                                     color: Colors.white.withValues(alpha: 0.1),
                                     borderRadius: BorderRadius.circular(8),
                                   ),
                                   child: Row(
                                     children: [
-                                      Icon(categoryIcon, size: 13, color: Colors.white70),
+                                      Icon(
+                                        categoryIcon,
+                                        size: 13,
+                                        color: Colors.white70,
+                                      ),
                                       const SizedBox(width: 4),
                                       Text(
                                         _getCategoryName(todo.category, l10n),
-                                        style: const TextStyle(color: Colors.white70, fontSize: 11),
+                                        style: const TextStyle(
+                                          color: Colors.white70,
+                                          fontSize: 11,
+                                        ),
                                       ),
                                     ],
                                   ),
@@ -785,25 +1035,46 @@ class _TodoPageState extends ConsumerState<TodoPage> {
 
                                 // Priority Badge
                                 Container(
-                                  padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 3),
+                                  padding: const EdgeInsets.symmetric(
+                                    horizontal: 8,
+                                    vertical: 3,
+                                  ),
                                   decoration: BoxDecoration(
-                                    color: priorityColor.withValues(alpha: 0.18),
+                                    color: priorityColor.withValues(
+                                      alpha: 0.18,
+                                    ),
                                     borderRadius: BorderRadius.circular(8),
-                                    border: Border.all(color: priorityColor, width: 0.8),
+                                    border: Border.all(
+                                      color: priorityColor,
+                                      width: 0.8,
+                                    ),
                                   ),
                                   child: Text(
                                     _getPriorityName(todo.priority, l10n),
-                                    style: TextStyle(color: priorityColor, fontSize: 11, fontWeight: FontWeight.bold),
+                                    style: TextStyle(
+                                      color: priorityColor,
+                                      fontSize: 11,
+                                      fontWeight: FontWeight.bold,
+                                    ),
                                   ),
                                 ),
 
                                 if (todo.dueDate != null) ...[
                                   const Spacer(),
-                                  Icon(Icons.schedule_rounded, size: 13, color: Colors.white60),
+                                  const Icon(
+                                    Icons.schedule_rounded,
+                                    size: 13,
+                                    color: Colors.white60,
+                                  ),
                                   const SizedBox(width: 4),
                                   Text(
-                                    DateFormat('dd MMM HH:mm').format(todo.dueDate!),
-                                    style: const TextStyle(color: Colors.white60, fontSize: 11),
+                                    DateFormat(
+                                      'dd MMM HH:mm',
+                                    ).format(todo.dueDate!),
+                                    style: const TextStyle(
+                                      color: Colors.white60,
+                                      fontSize: 11,
+                                    ),
                                   ),
                                 ],
                               ],
@@ -817,19 +1088,28 @@ class _TodoPageState extends ConsumerState<TodoPage> {
                         mainAxisSize: MainAxisSize.min,
                         children: [
                           IconButton(
-                            icon: const Icon(Icons.edit_outlined, color: Colors.white60, size: 18),
+                            icon: const Icon(
+                              Icons.edit_outlined,
+                              color: Colors.white60,
+                              size: 18,
+                            ),
                             padding: const EdgeInsets.all(4),
                             constraints: const BoxConstraints(),
                             onPressed: () => _showAddEditTodoSheet(todo),
                           ),
                           const SizedBox(width: 4),
                           IconButton(
-                            icon: const Icon(Icons.delete_outline_rounded, color: Colors.redAccent, size: 18),
+                            icon: const Icon(
+                              Icons.delete_outline_rounded,
+                              color: Colors.redAccent,
+                              size: 18,
+                            ),
                             padding: const EdgeInsets.all(4),
                             constraints: const BoxConstraints(),
-                            onPressed: () {
-                              ref.read(todoProvider.notifier).deleteTodo(todo.id);
-                            },
+                            // Artık anında geri dönüşü olmayan silme değil — Undo'lu Snackbar ile
+                            // yanlışlıkla silmeye karşı bir güvenlik ağı var.
+                            onPressed: () =>
+                                _deleteWithUndo(todo, l10n, accent),
                           ),
                         ],
                       ),
@@ -841,6 +1121,58 @@ class _TodoPageState extends ConsumerState<TodoPage> {
           ),
         ),
       ),
+    );
+  }
+}
+
+/// Liste ilk yüklendiğinde / filtre değiştiğinde her kartın hafif bir
+/// gecikmeyle kayarak belirmesini sağlar — düz bir `ListView.builder`
+/// yerine akışa "canlılık" katan ucuz bir katman.
+class _StaggeredEntry extends StatefulWidget {
+  final Widget child;
+  final int index;
+
+  const _StaggeredEntry({required this.child, required this.index});
+
+  @override
+  State<_StaggeredEntry> createState() => _StaggeredEntryState();
+}
+
+class _StaggeredEntryState extends State<_StaggeredEntry>
+    with SingleTickerProviderStateMixin {
+  late final AnimationController _controller = AnimationController(
+    vsync: this,
+    duration: const Duration(milliseconds: 300),
+  );
+  late final Animation<double> _fade = CurvedAnimation(
+    parent: _controller,
+    curve: Curves.easeOut,
+  );
+  late final Animation<Offset> _slide = Tween<Offset>(
+    begin: const Offset(0, 0.06),
+    end: Offset.zero,
+  ).animate(CurvedAnimation(parent: _controller, curve: Curves.easeOutCubic));
+
+  @override
+  void initState() {
+    super.initState();
+    final delayMs = 22 * widget.index.clamp(0, 14);
+    Future.delayed(Duration(milliseconds: delayMs), () {
+      if (mounted) _controller.forward();
+    });
+  }
+
+  @override
+  void dispose() {
+    _controller.dispose();
+    super.dispose();
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return FadeTransition(
+      opacity: _fade,
+      child: SlideTransition(position: _slide, child: widget.child),
     );
   }
 }

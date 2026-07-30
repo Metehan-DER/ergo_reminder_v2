@@ -1,5 +1,6 @@
 import 'dart:ui';
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:lottie/lottie.dart';
 import 'package:window_manager/window_manager.dart';
@@ -475,6 +476,11 @@ class _HomePageState extends ConsumerState<HomePage>
 
   // ── Widget Builders ──────────────────────────────────────────────────────────
 
+  // Not: bu widget artık aktif temanın accent rengini kullanıyor, bu yüzden
+  // dosyanın başında `import '../providers/theme_provider.dart';` ve
+  // haptic feedback için `import 'package:flutter/services.dart';` olduğundan
+  // emin ol (yoksa ekle).
+
   Widget _buildMainStatusCard({
     required bool isRunning,
     required int workMinutes,
@@ -483,6 +489,8 @@ class _HomePageState extends ConsumerState<HomePage>
   }) {
     final title = _getGreetingTitle(userName, userTitle);
     final subtitle = _getGreetingSubtitle(isRunning);
+    final accent = ref.watch(themeProvider).primarySeedColor;
+
 
     return _buildGlassCard(
       padding: const EdgeInsets.all(20),
@@ -509,12 +517,18 @@ class _HomePageState extends ConsumerState<HomePage>
                       ),
                     ],
                   ),
-                  child: Icon(
-                    isRunning
-                        ? Icons.favorite_rounded
-                        : Icons.favorite_border_rounded,
-                    size: 36,
-                    color: Colors.white,
+                  child: AnimatedSwitcher(
+                    duration: const Duration(milliseconds: 250),
+                    transitionBuilder: (child, animation) =>
+                        ScaleTransition(scale: animation, child: child),
+                    child: Icon(
+                      isRunning
+                          ? Icons.favorite_rounded
+                          : Icons.favorite_border_rounded,
+                      key: ValueKey(isRunning),
+                      size: 36,
+                      color: Colors.white,
+                    ),
                   ),
                 ),
               ),
@@ -533,13 +547,35 @@ class _HomePageState extends ConsumerState<HomePage>
                       ),
                     ),
                     const SizedBox(height: 4),
-                    Text(
-                      subtitle,
-                      style: TextStyle(
-                        fontSize: 12,
-                        color: Colors.white.withValues(alpha: 0.8),
-                        height: 1.3,
-                      ),
+                    Row(
+                      children: [
+                        // Aktif takip sırasında küçük, nabız gibi atan bir
+                        // durum noktası — "canlı" olduğunu tek bakışta belli eder.
+                        if (isRunning) ...[
+                          ScaleTransition(
+                            scale: _pulseAnimation,
+                            child: Container(
+                              width: 6,
+                              height: 6,
+                              decoration: const BoxDecoration(
+                                color: Colors.greenAccent,
+                                shape: BoxShape.circle,
+                              ),
+                            ),
+                          ),
+                          const SizedBox(width: 6),
+                        ],
+                        Expanded(
+                          child: Text(
+                            subtitle,
+                            style: TextStyle(
+                              fontSize: 12,
+                              color: Colors.white.withValues(alpha: 0.8),
+                              height: 1.3,
+                            ),
+                          ),
+                        ),
+                      ],
                     ),
                   ],
                 ),
@@ -590,33 +626,63 @@ class _HomePageState extends ConsumerState<HomePage>
               Expanded(
                 child: SizedBox(
                   height: 44,
-                  child: ElevatedButton.icon(
-                    onPressed: () {
-                      final newState = !isRunning;
-                      ref.read(appProvider.notifier).setRunning(newState);
-                      ref.read(trayProvider.notifier).updateTrayMenu(newState);
-                    },
-                    icon: Icon(
-                      isRunning
-                          ? Icons.pause_circle_filled
-                          : Icons.play_circle_filled,
-                      size: 20,
+                  child: AnimatedContainer(
+                    duration: const Duration(milliseconds: 220),
+                    decoration: BoxDecoration(
+                      borderRadius: BorderRadius.circular(22),
+                      boxShadow: [
+                        if (!isRunning)
+                          BoxShadow(
+                            color: accent.withValues(alpha: 0.45),
+                            blurRadius: 16,
+                            offset: const Offset(0, 6),
+                          ),
+                      ],
                     ),
-                    label: Text(
-                      isRunning ? _l10n.stop : _l10n.start,
-                      style: const TextStyle(
-                        fontSize: 15,
-                        fontWeight: FontWeight.bold,
+                    child: ElevatedButton.icon(
+                      onPressed: () {
+                        HapticFeedback.mediumImpact();
+                        final newState = !isRunning;
+                        ref.read(appProvider.notifier).setRunning(newState);
+                        ref
+                            .read(trayProvider.notifier)
+                            .updateTrayMenu(newState);
+                      },
+                      icon: AnimatedSwitcher(
+                        duration: const Duration(milliseconds: 200),
+                        transitionBuilder: (child, animation) =>
+                            ScaleTransition(scale: animation, child: child),
+                        child: Icon(
+                          isRunning
+                              ? Icons.pause_circle_filled
+                              : Icons.play_circle_filled,
+                          key: ValueKey(isRunning),
+                          size: 20,
+                        ),
                       ),
-                    ),
-                    style: ElevatedButton.styleFrom(
-                      backgroundColor: isRunning ? Colors.white : Colors.grey,
-                      foregroundColor: isRunning
-                          ? Colors.indigo.shade900
-                          : Colors.white,
-                      elevation: 4,
-                      shape: RoundedRectangleBorder(
-                        borderRadius: BorderRadius.circular(22),
+                      label: Text(
+                        isRunning ? _l10n.stop : _l10n.start,
+                        style: const TextStyle(
+                          fontSize: 15,
+                          fontWeight: FontWeight.bold,
+                        ),
+                      ),
+                      style: ElevatedButton.styleFrom(
+                        // Takip zaten aktifken buton "sakinleşir" — dikkat çekmesi
+                        // gereken an, henüz başlatılmamış olduğu andır.
+                        backgroundColor: isRunning
+                            ? Colors.white.withValues(alpha: 0.14)
+                            : accent.withValues(alpha: 0.85),
+                        foregroundColor: isRunning
+                            ? Colors.white
+                            : Colors.white,
+                        elevation: isRunning ? 0 : 4,
+                        side: isRunning
+                            ? const BorderSide(color: Colors.white30)
+                            : BorderSide.none,
+                        shape: RoundedRectangleBorder(
+                          borderRadius: BorderRadius.circular(22),
+                        ),
                       ),
                     ),
                   ),
@@ -937,7 +1003,10 @@ class _HomePageState extends ConsumerState<HomePage>
                 gradient: LinearGradient(
                   begin: Alignment.topLeft,
                   end: Alignment.bottomRight,
-                  colors: [color.withValues(alpha: 0.85), color.withValues(alpha: 0.55)],
+                  colors: [
+                    color.withValues(alpha: 0.85),
+                    color.withValues(alpha: 0.55),
+                  ],
                 ),
                 borderRadius: BorderRadius.circular(10),
                 boxShadow: [
@@ -1184,7 +1253,8 @@ class _UrgentPulse extends StatefulWidget {
   State<_UrgentPulse> createState() => _UrgentPulseState();
 }
 
-class _UrgentPulseState extends State<_UrgentPulse> with SingleTickerProviderStateMixin {
+class _UrgentPulseState extends State<_UrgentPulse>
+    with SingleTickerProviderStateMixin {
   late final AnimationController _controller = AnimationController(
     vsync: this,
     duration: const Duration(milliseconds: 900),

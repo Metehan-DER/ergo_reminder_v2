@@ -692,6 +692,18 @@ abstract class AppLocalizations {
   /// **'Görevi Sil'**
   String get deleteTask;
 
+  /// No description provided for @taskDeleted.
+  ///
+  /// In tr, this message translates to:
+  /// **'Görev başarıyla silindi'**
+  String get taskDeleted;
+
+  /// No description provided for @undo.
+  ///
+  /// In tr, this message translates to:
+  /// **'Geri Al'**
+  String get undo;
+
   /// No description provided for @taskTitleHint.
   ///
   /// In tr, this message translates to:

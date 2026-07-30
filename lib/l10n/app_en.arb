@@ -110,6 +110,8 @@
   "addTask": "Add New Task",
   "editTask": "Edit Task",
   "deleteTask": "Delete Task",
+  "taskDeleted": "Task deleted successfully",
+  "undo": "Undo",
   "taskTitleHint": "Task title...",
   "taskDescHint": "Description or notes (optional)...",
   "priority": "Priority",

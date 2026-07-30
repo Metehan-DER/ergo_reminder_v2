@@ -314,6 +314,12 @@ class AppLocalizationsTr extends AppLocalizations {
   String get deleteTask => 'Görevi Sil';
 
   @override
+  String get taskDeleted => 'Görev başarıyla silindi';
+
+  @override
+  String get undo => 'Geri Al';
+
+  @override
   String get taskTitleHint => 'Görev başlığı...';
 
   @override

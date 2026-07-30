@@ -313,6 +313,12 @@ class AppLocalizationsEn extends AppLocalizations {
   String get deleteTask => 'Delete Task';
 
   @override
+  String get taskDeleted => 'Task deleted successfully';
+
+  @override
+  String get undo => 'Undo';
+
+  @override
   String get taskTitleHint => 'Task title...';
 
   @override
