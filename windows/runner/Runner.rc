@@ -90,12 +90,12 @@ BEGIN
         BLOCK "040904e4"
         BEGIN
             VALUE "CompanyName", "com.example" "\0"
-            VALUE "FileDescription", "ergo_reminder_v2" "\0"
+            VALUE "FileDescription", "ErgoMate" "\0"
             VALUE "FileVersion", VERSION_AS_STRING "\0"
-            VALUE "InternalName", "ergo_reminder_v2" "\0"
+            VALUE "InternalName", "ErgoMate" "\0"
             VALUE "LegalCopyright", "Copyright (C) 2025 com.example. All rights reserved." "\0"
-            VALUE "OriginalFilename", "ergo_reminder_v2.exe" "\0"
-            VALUE "ProductName", "ergo_reminder_v2" "\0"
+            VALUE "OriginalFilename", "ErgoMate.exe" "\0"
+            VALUE "ProductName", "ErgoMate" "\0"
             VALUE "ProductVersion", VERSION_AS_STRING "\0"
         END
     END

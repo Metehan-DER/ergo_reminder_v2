@@ -1,6 +1,6 @@
 {
-    "name": "ergo_reminder_v2",
-    "short_name": "ergo_reminder_v2",
+    "name": "ErgoMate",
+    "short_name": "ErgoMate",
     "start_url": ".",
     "display": "standalone",
     "background_color": "#0175C2",

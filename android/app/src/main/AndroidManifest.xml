@@ -1,6 +1,6 @@
 <manifest xmlns:android="http://schemas.android.com/apk/res/android">
     <application
-        android:label="ergo_reminder_v2"
+        android:label="ErgoMate"
         android:name="${applicationName}"
         android:icon="@mipmap/ic_launcher">
         <activity
