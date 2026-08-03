@@ -10,7 +10,7 @@ import 'core/utils/page_transitions.dart';
 import 'presentation/providers/service_providers.dart';
 import 'presentation/providers/app_provider.dart';
 import 'presentation/providers/theme_provider.dart';
-import 'presentation/providers/timer_provider.dart';
+import 'presentation/providers/tray_provider.dart';
 import 'presentation/providers/settings_provider.dart';
 import 'presentation/pages/home_page.dart';
 import 'presentation/pages/onboarding_page.dart';

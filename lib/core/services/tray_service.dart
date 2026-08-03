@@ -1,8 +1,12 @@
 import 'dart:io';
 import 'package:flutter/foundation.dart';
 import 'package:tray_manager/tray_manager.dart';
+import 'i_tray_service.dart';
 
-class TrayService {
+/// TrayService — [ITrayService] arayüzünün somut implementasyonu.
+/// Platform (Windows / macOS) farklılıklarını bu sınıf kapsüller.
+class TrayService implements ITrayService {
+  @override
   Future<void> init() async {
     try {
       if (Platform.isWindows) {
@@ -36,26 +40,32 @@ class TrayService {
     }
   }
 
+  @override
   Future<void> setToolTip(String text) async {
     await trayManager.setToolTip(text);
   }
 
+  @override
   Future<void> setContextMenu(Menu menu) async {
     await trayManager.setContextMenu(menu);
   }
 
+  @override
   void popUpContextMenu() {
     trayManager.popUpContextMenu();
   }
 
+  @override
   void addListener(TrayListener listener) {
     trayManager.addListener(listener);
   }
 
+  @override
   void removeListener(TrayListener listener) {
     trayManager.removeListener(listener);
   }
 
+  @override
   Future<void> destroy() async {
     await trayManager.destroy();
   }

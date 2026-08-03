@@ -1,4 +1,3 @@
-import 'dart:ui';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
@@ -7,6 +6,8 @@ import 'package:window_manager/window_manager.dart';
 import '../../l10n/app_localizations.dart';
 import '../../core/config/app_config.dart';
 import '../../core/constants/daily_quotes.dart';
+import '../../core/constants/reminder_contents.dart';
+import '../../core/constants/todo_display_constants.dart';
 import '../../core/utils/page_transitions.dart';
 
 import '../providers/app_provider.dart';
@@ -15,11 +16,16 @@ import '../providers/settings_provider.dart';
 import '../providers/stats_provider.dart';
 import '../providers/theme_provider.dart';
 import '../providers/timer_provider.dart';
+import '../providers/tray_provider.dart';
 
 import 'settings_page.dart';
 import 'stats_page.dart';
 import 'todo_page.dart';
 import 'calendar_page.dart';
+import '../widgets/glass_card.dart';
+import '../widgets/reminder_card.dart';
+import '../widgets/reminder_dialog.dart';
+import '../widgets/silent_hours_card.dart';
 import '../widgets/todo_summary_card.dart';
 import '../widgets/water_tracker_card.dart';
 
@@ -44,21 +50,8 @@ class _HomePageState extends ConsumerState<HomePage>
   ];
   List<Color> _backgroundColors = List.from(_defaultColors);
 
-  final Map<String, IconData> _reminderIcons = {
-    'eyeRest': Icons.visibility,
-    'posture': Icons.accessibility_new,
-    'water': Icons.local_drink,
-    'stretch': Icons.self_improvement,
-    'walk': Icons.directions_walk,
-  };
-
-  final Map<String, Color> _reminderColors = {
-    'eyeRest': Colors.blue,
-    'posture': Colors.purple,
-    'water': Colors.cyan,
-    'stretch': Colors.orange,
-    'walk': Colors.green,
-  };
+  // OCP: Icon ve renk map'leri artık TodoDisplayConstants'tan okunuyor.
+  // Yeni reminder eklemek için bu dosya değiştirilmez.
 
   @override
   void initState() {
@@ -164,73 +157,24 @@ class _HomePageState extends ConsumerState<HomePage>
       windowManager.setAlwaysOnTop(false);
     } catch (_) {}
 
-    showDialog(
+    // SRP: Dialog UI artık reminder_dialog.dart'ta — bu metod sadece çağırır.
+    showReminderDialog(
       context: context,
-      barrierDismissible: false,
-      builder: (ctx) => PopScope(
-        canPop: false,
-        child: AlertDialog(
-          shape: RoundedRectangleBorder(
-            borderRadius: BorderRadius.circular(25),
-          ),
-          backgroundColor: Colors.deepPurple.shade900.withValues(alpha: 0.9),
-          title: Row(
-            children: [
-              Container(
-                padding: const EdgeInsets.all(8),
-                decoration: BoxDecoration(
-                  color: color.withValues(alpha: 0.2),
-                  shape: BoxShape.circle,
-                ),
-                child: Icon(icon, color: Colors.white, size: 28),
-              ),
-              const SizedBox(width: 15),
-              Expanded(
-                child: Text(
-                  title,
-                  style: const TextStyle(
-                    color: Colors.white,
-                    fontWeight: FontWeight.bold,
-                  ),
-                ),
-              ),
-            ],
-          ),
-          content: Text(
-            body,
-            style: const TextStyle(color: Colors.white70, fontSize: 16),
-          ),
-          actionsPadding: const EdgeInsets.all(15),
-          actions: [
-            TextButton(
-              onPressed: () {
-                _isDialogShowing = false;
-                ref.read(timerProvider.notifier).snoozeReminder(id);
-                Navigator.pop(ctx);
-              },
-              child: Text(
-                _l10n.snoozeButtonLabel,
-                style: const TextStyle(color: Colors.white60),
-              ),
-            ),
-            ElevatedButton(
-              style: ElevatedButton.styleFrom(
-                backgroundColor: color,
-                foregroundColor: Colors.white,
-                shape: RoundedRectangleBorder(
-                  borderRadius: BorderRadius.circular(15),
-                ),
-              ),
-              onPressed: () {
-                _isDialogShowing = false;
-                ref.read(timerProvider.notifier).removeFirstFromQueue();
-                Navigator.pop(ctx);
-              },
-              child: Text(_l10n.dialogOk),
-            ),
-          ],
-        ),
-      ),
+      id: id,
+      title: title,
+      body: body,
+      color: color,
+      icon: icon,
+      snoozeLabel: _l10n.snoozeButtonLabel,
+      okLabel: _l10n.dialogOk,
+      onSnooze: () {
+        _isDialogShowing = false;
+        ref.read(timerProvider.notifier).snoozeReminder(id);
+      },
+      onOk: () {
+        _isDialogShowing = false;
+        ref.read(timerProvider.notifier).removeFirstFromQueue();
+      },
     ).then((_) {
       _isDialogShowing = false;
     });
@@ -250,15 +194,16 @@ class _HomePageState extends ConsumerState<HomePage>
     ref.listen<TimerState>(timerProvider, (previous, next) {
       if (next.dialogQueue.isNotEmpty && !_isDialogShowing) {
         final activeId = next.dialogQueue.first;
-        final name = _getReminderName(activeId);
-        final msg = _getReminderMessage(activeId);
-        final icon = _reminderIcons[activeId] ?? Icons.notifications;
-        final color = _reminderColors[activeId] ?? Colors.deepPurple;
+        // OCP: switch kaldırıldı, ReminderContents kullanılıyor
+        final content = ReminderContents.getById(activeId);
+        final isTr = ref.read(appProvider).locale.languageCode == 'tr';
+        final icon = TodoDisplayConstants.reminderIcon(activeId);
+        final color = TodoDisplayConstants.reminderColor(activeId);
 
         _showReminderDialog(
           id: activeId,
-          title: name,
-          body: msg,
+          title: content.title(isTr: isTr),
+          body: content.body(isTr: isTr),
           color: color,
           icon: icon,
         );
@@ -492,7 +437,7 @@ class _HomePageState extends ConsumerState<HomePage>
     final accent = ref.watch(themeProvider).primarySeedColor;
 
 
-    return _buildGlassCard(
+    return GlassCard(
       padding: const EdgeInsets.all(20),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
@@ -700,7 +645,7 @@ class _HomePageState extends ConsumerState<HomePage>
     final quote = DailyQuotes.getQuoteForToday();
     final isTr = locale.languageCode == 'tr';
 
-    return _buildGlassCard(
+    return GlassCard(
       isLightGlass: true,
       padding: const EdgeInsets.all(18),
       child: Column(
@@ -783,7 +728,7 @@ class _HomePageState extends ConsumerState<HomePage>
     return Row(
       children: [
         Expanded(
-          child: _buildGlassCard(
+          child: GlassCard(
             isLightGlass: true,
             padding: const EdgeInsets.symmetric(vertical: 14, horizontal: 8),
             child: Column(
@@ -825,7 +770,7 @@ class _HomePageState extends ConsumerState<HomePage>
         ),
         const SizedBox(width: 10),
         Expanded(
-          child: _buildGlassCard(
+          child: GlassCard(
             isLightGlass: true,
             padding: const EdgeInsets.symmetric(vertical: 14, horizontal: 8),
             child: Column(
@@ -870,7 +815,7 @@ class _HomePageState extends ConsumerState<HomePage>
           child: InkWell(
             borderRadius: BorderRadius.circular(20),
             onTap: _openStats,
-            child: _buildGlassCard(
+            child: GlassCard(
               isLightGlass: true,
               padding: const EdgeInsets.symmetric(vertical: 14, horizontal: 8),
               child: Column(
@@ -925,7 +870,7 @@ class _HomePageState extends ConsumerState<HomePage>
         .toList();
 
     if (activeReminders.isEmpty) {
-      return _buildGlassCard(
+      return GlassCard(
         isLightGlass: true,
         child: Padding(
           padding: const EdgeInsets.all(20.0),
@@ -959,16 +904,20 @@ class _HomePageState extends ConsumerState<HomePage>
           final elapsed = timerState.timeElapsed[key] ?? 0;
           final timeLeft = interval - elapsed;
           final progress = elapsed / interval;
+          // OCP: switch kaldırıldı — icon/renk/isim constants'tan okunuyor
+          final content = ReminderContents.getById(key);
+          final isTr = ref.read(appProvider).locale.languageCode == 'tr';
 
           return Padding(
             padding: const EdgeInsets.only(bottom: 10),
-            child: _buildReminderCard(
-              name: _getReminderName(key),
-              icon: _reminderIcons[key] ?? Icons.notifications,
-              color: _reminderColors[key] ?? Colors.deepPurple,
+            // SRP: ReminderCard widget'ı kendi dosyasında
+            child: ReminderCard(
+              name: content.title(isTr: isTr),
+              icon: TodoDisplayConstants.reminderIcon(key),
+              color: TodoDisplayConstants.reminderColor(key),
               timeLeft: timeLeft,
               progress: progress.clamp(0.0, 1.0),
-              interval: interval,
+              minuteShortLabel: _l10n.minuteShort,
             ),
           );
         }),
@@ -976,336 +925,17 @@ class _HomePageState extends ConsumerState<HomePage>
     );
   }
 
-  Widget _buildReminderCard({
-    required String name,
-    required IconData icon,
-    required Color color,
-    required int timeLeft,
-    required double progress,
-    required int interval,
-    VoidCallback? onSnooze,
-  }) {
-    // Süre dolmasına 1 dakika veya daha az kaldığında kart hafifçe nabız
-    // gibi parlar — kullanıcı bildirimi almadan önce görsel bir ön işaret alır.
-    final isUrgent = timeLeft <= 1;
+  // _buildReminderCard → ReminderCard widget'ına taşındı (SRP)
 
-    return _UrgentPulse(
-      active: isUrgent,
-      color: color,
-      child: _buildGlassCard(
-        isLightGlass: true,
-        padding: const EdgeInsets.all(14),
-        child: Row(
-          children: [
-            Container(
-              padding: const EdgeInsets.all(10),
-              decoration: BoxDecoration(
-                gradient: LinearGradient(
-                  begin: Alignment.topLeft,
-                  end: Alignment.bottomRight,
-                  colors: [
-                    color.withValues(alpha: 0.85),
-                    color.withValues(alpha: 0.55),
-                  ],
-                ),
-                borderRadius: BorderRadius.circular(10),
-                boxShadow: [
-                  BoxShadow(
-                    color: color.withValues(alpha: 0.35),
-                    blurRadius: 10,
-                    offset: const Offset(0, 3),
-                  ),
-                ],
-              ),
-              child: Icon(icon, color: Colors.white, size: 22),
-            ),
-            const SizedBox(width: 14),
-            Expanded(
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  Row(
-                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                    children: [
-                      Expanded(
-                        child: Text(
-                          name,
-                          overflow: TextOverflow.ellipsis,
-                          style: const TextStyle(
-                            fontSize: 15,
-                            fontWeight: FontWeight.w600,
-                            color: Colors.white,
-                          ),
-                        ),
-                      ),
-                      const SizedBox(width: 8),
-                      if (onSnooze != null)
-                        GestureDetector(
-                          onTap: onSnooze,
-                          child: Padding(
-                            padding: const EdgeInsets.only(right: 4),
-                            child: Icon(
-                              Icons.snooze_rounded,
-                              size: 18,
-                              color: Colors.white.withValues(alpha: 0.7),
-                            ),
-                          ),
-                        ),
-                      Container(
-                        padding: const EdgeInsets.symmetric(
-                          horizontal: 10,
-                          vertical: 4,
-                        ),
-                        decoration: BoxDecoration(
-                          color: isUrgent
-                              ? color.withValues(alpha: 0.35)
-                              : Colors.white.withValues(alpha: 0.18),
-                          borderRadius: BorderRadius.circular(12),
-                          border: Border.all(
-                            color: isUrgent
-                                ? color.withValues(alpha: 0.6)
-                                : Colors.white.withValues(alpha: 0.2),
-                          ),
-                        ),
-                        child: Text(
-                          '$timeLeft ${_l10n.minuteShort}',
-                          style: const TextStyle(
-                            fontSize: 13,
-                            fontWeight: FontWeight.bold,
-                            color: Colors.white,
-                          ),
-                        ),
-                      ),
-                    ],
-                  ),
-                  const SizedBox(height: 8),
-                  ClipRRect(
-                    borderRadius: BorderRadius.circular(10),
-                    child: TweenAnimationBuilder<double>(
-                      tween: Tween<double>(end: progress),
-                      duration: const Duration(milliseconds: 450),
-                      curve: Curves.easeOutCubic,
-                      builder: (context, animatedProgress, _) {
-                        return LinearProgressIndicator(
-                          value: animatedProgress,
-                          backgroundColor: Colors.white.withValues(alpha: 0.15),
-                          valueColor: AlwaysStoppedAnimation<Color>(color),
-                          minHeight: 5,
-                        );
-                      },
-                    ),
-                  ),
-                ],
-              ),
-            ),
-          ],
-        ),
-      ),
-    );
-  }
-
+  /// Sessiz saat kartı — SilentHoursCard widget'ına delege eder (SRP).
   Widget _buildSilentHoursCard() {
-    return _buildGlassCard(
-      isLightGlass: true,
-      padding: const EdgeInsets.all(16),
-      child: Row(
-        children: [
-          Container(
-            padding: const EdgeInsets.all(10),
-            decoration: BoxDecoration(
-              color: Colors.indigo.withValues(alpha: 0.3),
-              shape: BoxShape.circle,
-            ),
-            child: const Icon(
-              Icons.nightlight_round,
-              color: Colors.white,
-              size: 22,
-            ),
-          ),
-          const SizedBox(width: 14),
-          Expanded(
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                Text(
-                  _l10n.silentHoursActive,
-                  style: const TextStyle(
-                    fontSize: 15,
-                    fontWeight: FontWeight.bold,
-                    color: Colors.white,
-                  ),
-                ),
-                const SizedBox(height: 2),
-                Text(
-                  _l10n.silentHoursMuted,
-                  style: const TextStyle(fontSize: 12, color: Colors.white70),
-                ),
-              ],
-            ),
-          ),
-        ],
-      ),
+    return SilentHoursCard(
+      title: _l10n.silentHoursActive,
+      subtitle: _l10n.silentHoursMuted,
     );
   }
 
-  Widget _buildGlassCard({
-    required Widget child,
-    EdgeInsets? padding,
-    bool isLightGlass = false,
-  }) {
-    return Container(
-      width: double.infinity,
-      decoration: BoxDecoration(
-        borderRadius: BorderRadius.circular(20),
-        gradient: LinearGradient(
-          begin: Alignment.topLeft,
-          end: Alignment.bottomRight,
-          colors: isLightGlass
-              ? [
-                  Colors.white.withValues(alpha: 0.18),
-                  Colors.white.withValues(alpha: 0.06),
-                ]
-              : [
-                  Colors.white.withValues(alpha: 0.25),
-                  Colors.white.withValues(alpha: 0.1),
-                ],
-        ),
-        border: Border.all(
-          color: Colors.white.withValues(alpha: isLightGlass ? 0.12 : 0.2),
-          width: 1.2,
-        ),
-        boxShadow: [
-          BoxShadow(
-            color: Colors.black.withValues(alpha: 0.08),
-            blurRadius: 12,
-            offset: const Offset(0, 4),
-          ),
-        ],
-      ),
-      child: ClipRRect(
-        borderRadius: BorderRadius.circular(20),
-        child: BackdropFilter(
-          filter: ImageFilter.blur(
-            sigmaX: isLightGlass ? 8 : 10,
-            sigmaY: isLightGlass ? 8 : 10,
-          ),
-          child: Padding(
-            padding: padding ?? const EdgeInsets.all(16),
-            child: child,
-          ),
-        ),
-      ),
-    );
-  }
-
-  // ── Helpers ──────────────────────────────────────────────────────────────────
-
-  String _getReminderName(String key) {
-    switch (key) {
-      case 'eyeRest':
-        return _l10n.reminderEyeRest;
-      case 'posture':
-        return _l10n.reminderPosture;
-      case 'water':
-        return _l10n.reminderWater;
-      case 'stretch':
-        return _l10n.reminderStretch;
-      case 'walk':
-        return _l10n.reminderWalk;
-      default:
-        return _l10n.reminderDefault;
-    }
-  }
-
-  String _getReminderMessage(String key) {
-    switch (key) {
-      case 'eyeRest':
-        return _l10n.msgEyeRest;
-      case 'posture':
-        return _l10n.msgPosture;
-      case 'water':
-        return _l10n.msgWater;
-      case 'stretch':
-        return _l10n.msgStretch;
-      case 'walk':
-        return _l10n.msgWalk;
-      default:
-        return _l10n.msgDefault;
-    }
-  }
+  // _buildGlassCard → GlassCard widget'ına taşındı (SRP)
+  // _getReminderName / _getReminderMessage → ReminderContents sabitine taşındı (OCP)
 }
 
-/// Süresi dolmak üzere olan hatırlatıcı kartına hafif, tekrarlayan bir
-/// parlama efekti ekler. `active` false iken hiçbir ek maliyet olmadan
-/// çocuğu doğrudan döndürür.
-class _UrgentPulse extends StatefulWidget {
-  final Widget child;
-  final bool active;
-  final Color color;
-
-  const _UrgentPulse({
-    required this.child,
-    required this.active,
-    required this.color,
-  });
-
-  @override
-  State<_UrgentPulse> createState() => _UrgentPulseState();
-}
-
-class _UrgentPulseState extends State<_UrgentPulse>
-    with SingleTickerProviderStateMixin {
-  late final AnimationController _controller = AnimationController(
-    vsync: this,
-    duration: const Duration(milliseconds: 900),
-  );
-
-  @override
-  void initState() {
-    super.initState();
-    if (widget.active) _controller.repeat(reverse: true);
-  }
-
-  @override
-  void didUpdateWidget(covariant _UrgentPulse oldWidget) {
-    super.didUpdateWidget(oldWidget);
-    if (widget.active && !_controller.isAnimating) {
-      _controller.repeat(reverse: true);
-    } else if (!widget.active && _controller.isAnimating) {
-      _controller.stop();
-      _controller.value = 0;
-    }
-  }
-
-  @override
-  void dispose() {
-    _controller.dispose();
-    super.dispose();
-  }
-
-  @override
-  Widget build(BuildContext context) {
-    if (!widget.active) return widget.child;
-
-    return AnimatedBuilder(
-      animation: _controller,
-      builder: (context, child) {
-        final t = _controller.value;
-        return Container(
-          decoration: BoxDecoration(
-            borderRadius: BorderRadius.circular(20),
-            boxShadow: [
-              BoxShadow(
-                color: widget.color.withValues(alpha: 0.20 + t * 0.25),
-                blurRadius: 14 + t * 10,
-                spreadRadius: t * 1.5,
-              ),
-            ],
-          ),
-          child: child,
-        );
-      },
-      child: widget.child,
-    );
-  }
-}

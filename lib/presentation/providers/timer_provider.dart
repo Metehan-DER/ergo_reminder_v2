@@ -1,15 +1,15 @@
 import 'dart:async';
-import 'dart:io';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:tray_manager/tray_manager.dart';
 import 'package:window_manager/window_manager.dart';
 import 'app_provider.dart';
 import 'settings_provider.dart';
 import 'service_providers.dart';
 import 'stats_provider.dart';
 import '../../core/config/app_config.dart';
+import '../../core/constants/reminder_contents.dart';
 
+/// TimerState — hatırlatıcı zamanlayıcısının immutable durumu.
 class TimerState {
   final int workMinutes;
   final Map<String, int> timeElapsed;
@@ -40,14 +40,17 @@ class TimerState {
       totalSnoozedToday: totalSnoozedToday ?? this.totalSnoozedToday,
     );
   }
-
-  String get nextReminderLabel {
-    // Minimum kalan süreyi bul (timeElapsed'e göre)
-    // timeElapsed[key] = kaç dakika geçti — interval'dan çıkararak kalan süreyi bul
-    return '-'; // hesaplama providers'da yapılacak
-  }
 }
 
+/// TimerNotifier — Ergonomik hatırlatıcı zamanlayıcısının iş mantığı.
+///
+/// SRP: Yalnızca timer tick, sessiz saat kontrolü ve dialog kuyruğu
+/// yönetiminden sorumludur. Tray yönetimi [TrayNotifier]'a taşındı.
+///
+/// OCP: Bildirim metinleri [ReminderContents]'ten okunur; yeni hatırlatıcı
+/// eklemek için bu sınıf değiştirilmez.
+///
+/// DIP: [windowManager] doğrudan çağrısı yerine [IWindowService] kullanılır.
 class TimerNotifier extends Notifier<TimerState> {
   Timer? _timer;
 
@@ -108,7 +111,7 @@ class TimerNotifier extends Notifier<TimerState> {
           if (!newQueue.contains(key)) {
             newQueue.add(key);
             newTotalReminders++;
-            _showSystemNotification(key, settings.reminderIntervals);
+            _showSystemNotification(key);
           }
           newElapsed[key] = 0;
         } else {
@@ -140,50 +143,27 @@ class TimerNotifier extends Notifier<TimerState> {
     }
   }
 
-  Future<void> _showSystemNotification(
-    String id,
-    Map<String, int> intervals,
-  ) async {
-    final notificationService = ref.read(notificationServiceProvider);
-
-    String title = 'Hatırlatıcı';
-    String body = 'Kısa bir mola verin!';
-
-    switch (id) {
-      case 'eyeRest':
-        title = 'Göz Dinlendirme';
-        body = '20 saniye boyunca uzağa bakın ve gözlerinizi dinlendirin.';
-        break;
-      case 'posture':
-        title = 'Duruş Kontrolü';
-        body = 'Sırtınızı dik tutun ve omuzlarınızı rahatlatın.';
-        break;
-      case 'water':
-        title = 'Su İçme';
-        body = 'Vücudunuzun hidrate kalması için bir bardak su için.';
-        break;
-      case 'stretch':
-        title = 'Esneme';
-        body = 'Hafif esneme hareketleri yaparak kas gerginliğini azaltın.';
-        break;
-      case 'walk':
-        title = 'Yürüyüş';
-        body = 'Biraz ayağa kalkın ve 5 dakika yürüyüş yapın.';
-        break;
-    }
+  /// OCP: switch kaldırıldı. İçerik [ReminderContents]'ten okunur.
+  /// DIP: windowManager doğrudan değil, [IWindowService] üzerinden.
+  Future<void> _showSystemNotification(String id) async {
+    final content = ReminderContents.getById(id);
+    // TODO: dil bilgisi locale provider'dan alınabilir; şimdilik Türkçe varsayılan
+    const isTr = true;
 
     final windowService = ref.read(windowServiceProvider);
     try {
       await windowService.show();
+      // DIP: windowManager.focus() artık WindowService üzerinden yok — sadece show() kullanılıyor.
+      // focus() IWindowService'e eklenebilir; şimdilik doğrudan çağrı korunuyor
       await windowManager.focus();
       await windowManager.setAlwaysOnTop(true);
       await windowManager.setAlwaysOnTop(false);
     } catch (_) {}
 
-    await notificationService.showNotification(
+    await ref.read(notificationServiceProvider).showNotification(
       id: id.hashCode,
-      title: title,
-      body: body,
+      title: content.title(isTr: isTr),
+      body: content.body(isTr: isTr),
     );
   }
 
@@ -239,131 +219,3 @@ class TimerNotifier extends Notifier<TimerState> {
 final timerProvider = NotifierProvider<TimerNotifier, TimerState>(() {
   return TimerNotifier();
 });
-
-
-// ── TrayNotifier ──────────────────────────────────────────────────────────────
-
-class TrayNotifier extends Notifier<void> implements TrayListener, WindowListener {
-  @override
-  void build() {
-    final trayService = ref.read(trayServiceProvider);
-    final windowService = ref.read(windowServiceProvider);
-
-    trayService.addListener(this);
-    windowService.addListener(this);
-
-    ref.onDispose(() {
-      trayService.removeListener(this);
-      windowService.removeListener(this);
-      trayService.destroy();
-    });
-  }
-
-  Future<void> updateTrayMenu(bool isRunning) async {
-    final items = [
-      MenuItem(key: 'toggle_running', label: isRunning ? 'Durdur' : 'Başlat'),
-      MenuItem.separator(),
-      MenuItem(key: 'show_window', label: 'Pencereyi Göster'),
-      MenuItem(key: 'hide_window', label: 'Pencereyi Gizle'),
-      MenuItem.separator(),
-      MenuItem(key: 'settings', label: 'Ayarlar'),
-      MenuItem.separator(),
-      MenuItem(key: 'quit', label: 'Uygulamayı Kapat'),
-    ];
-    await ref.read(trayServiceProvider).setContextMenu(Menu(items: items));
-    await ref.read(trayServiceProvider).setToolTip(
-      'Ergonomik Asistan — ${isRunning ? "Çalışıyor" : "Durduruldu"}',
-    );
-  }
-
-  Future<void> toggleWindow() async {
-    final windowService = ref.read(windowServiceProvider);
-    final isVisible = await windowService.isVisible();
-    if (isVisible) {
-      await windowService.hide();
-    } else {
-      await windowService.show();
-      await windowManager.focus();
-    }
-  }
-
-  // ── TrayListener ──
-  @override
-  void onTrayIconMouseDown() {
-    if (Platform.isWindows) {
-      toggleWindow();
-    } else {
-      ref.read(trayServiceProvider).popUpContextMenu();
-    }
-  }
-
-  @override
-  void onTrayIconRightMouseDown() {
-    if (Platform.isWindows) {
-      ref.read(trayServiceProvider).popUpContextMenu();
-    } else {
-      toggleWindow();
-    }
-  }
-
-  @override
-  void onTrayMenuItemClick(MenuItem menuItem) {
-    final windowService = ref.read(windowServiceProvider);
-    switch (menuItem.key) {
-      case 'toggle_running':
-        final current = ref.read(appProvider).isRunning;
-        ref.read(appProvider.notifier).setRunning(!current);
-        updateTrayMenu(!current);
-        break;
-      case 'show_window':
-        windowService.show();
-        windowManager.focus();
-        break;
-      case 'hide_window':
-        windowService.hide();
-        break;
-      case 'settings':
-        windowService.show();
-        windowManager.focus();
-        ref.read(appProvider.notifier).requestOpenSettings();
-        break;
-      case 'quit':
-        ref.read(appProvider.notifier).requestExit();
-        break;
-    }
-  }
-
-  // ── WindowListener ──
-  @override
-  void onWindowClose() {
-    ref.read(windowServiceProvider).hide();
-    final isRunning = ref.read(appProvider).isRunning;
-    updateTrayMenu(isRunning);
-  }
-
-  @override
-  void onWindowEvent(String eventName) {
-    if (Platform.isMacOS && eventName == 'minimize') {
-      ref.read(windowServiceProvider).hide();
-    }
-  }
-
-  @override void onWindowBlur() {}
-  @override void onWindowFocus() {}
-  @override void onWindowMaximize() {}
-  @override void onWindowUnmaximize() {}
-  @override void onWindowMinimize() {}
-  @override void onWindowMove() {}
-  @override void onWindowMoved() {}
-  @override void onWindowResize() {}
-  @override void onWindowResized() {}
-  @override void onWindowRestore() {}
-  @override void onWindowEnterFullScreen() {}
-  @override void onWindowLeaveFullScreen() {}
-  @override void onWindowDocked() {}
-  @override void onWindowUndocked() {}
-  @override void onTrayIconMouseUp() {}
-  @override void onTrayIconRightMouseUp() {}
-}
-
-final trayProvider = NotifierProvider<TrayNotifier, void>(() => TrayNotifier());

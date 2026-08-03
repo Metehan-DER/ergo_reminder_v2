@@ -1,10 +1,15 @@
 import 'package:flutter/services.dart';
 import 'package:flutter_local_notifications/flutter_local_notifications.dart';
+import 'i_notification_service.dart';
 
-class NotificationService {
+/// NotificationService — [INotificationService] arayüzünün somut implementasyonu.
+/// Yüksek seviye modüller doğrudan bu sınıfa değil, [INotificationService]'e
+/// bağımlı olmalıdır (DIP).
+class NotificationService implements INotificationService {
   final FlutterLocalNotificationsPlugin _notifications =
       FlutterLocalNotificationsPlugin();
 
+  @override
   Future<void> init() async {
     const initializationSettingsWindows = WindowsInitializationSettings(
       appName: 'ErgoMate',
@@ -27,6 +32,7 @@ class NotificationService {
     await _notifications.initialize(initializationSettings);
   }
 
+  @override
   Future<void> showNotification({
     required int id,
     required String title,
@@ -65,10 +71,12 @@ class NotificationService {
     );
   }
 
+  @override
   Future<void> cancel(int id) async {
     await _notifications.cancel(id);
   }
 
+  @override
   Future<void> cancelAll() async {
     await _notifications.cancelAll();
   }

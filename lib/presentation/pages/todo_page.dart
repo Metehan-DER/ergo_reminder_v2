@@ -4,6 +4,7 @@ import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:intl/intl.dart';
 
+import '../../core/constants/todo_display_constants.dart';
 import '../../domain/entities/todo_entity.dart';
 import '../../l10n/app_localizations.dart';
 import '../providers/theme_provider.dart';
@@ -25,29 +26,14 @@ class _TodoPageState extends ConsumerState<TodoPage> {
     super.dispose();
   }
 
-  Color _getPriorityColor(TodoPriority priority) {
-    switch (priority) {
-      case TodoPriority.high:
-        return const Color(0xFFFF5252);
-      case TodoPriority.medium:
-        return const Color(0xFFFFB74D);
-      case TodoPriority.low:
-        return const Color(0xFF4DD0E1);
-    }
-  }
+  // OCP: Renkler artık TodoDisplayConstants'tan okunuyor.
+  // Yeni priority eklemek için bu dosya değiştirilmez.
+  Color _getPriorityColor(TodoPriority priority) =>
+      TodoDisplayConstants.priorityColor(priority);
 
-  IconData _getCategoryIcon(TodoCategory category) {
-    switch (category) {
-      case TodoCategory.work:
-        return Icons.laptop_mac_rounded;
-      case TodoCategory.health:
-        return Icons.favorite_rounded;
-      case TodoCategory.ergo:
-        return Icons.self_improvement_rounded;
-      case TodoCategory.personal:
-        return Icons.person_rounded;
-    }
-  }
+  // OCP: İkonlar artık TodoDisplayConstants'tan okunuyor.
+  IconData _getCategoryIcon(TodoCategory category) =>
+      TodoDisplayConstants.categoryIcon(category);
 
   String _getCategoryName(TodoCategory category, AppLocalizations l10n) {
     switch (category) {
